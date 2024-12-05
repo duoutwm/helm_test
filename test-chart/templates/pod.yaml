@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 kind: Pod
 metadata:
   name: folder-creator
@@ -11,13 +11,13 @@ spec:
         - -c
         - |
           mkdir -p /mnt/data/{{ .Values.folderName }} && \
-          echo "Sample Image" > /mnt/data/{{ .Values.folderName }}/{{ .Values.imagePath }} && \
+          echo "Sample Image" > /mnt/data/{{ .Values.folderName }}{{ .Values.imagePath }} && \
           sleep 3600
       volumeMounts:
         - name: data-volume
-          mountPath: /mnt/data  # Путь в контейнере
+          mountPath: /mnt/data  # Путь внутри контейнера, где будут храниться данные
   volumes:
     - name: data-volume
       hostPath:
-        path: /mnt/data  # Путь на сервере, где хранятся данные
-        type: Directory  # Тип тома — папка
+        path: /mnt/data  # Путь на сервере, где будут храниться данные
+        type: Directory  # Указываем, что это директория на хосте
