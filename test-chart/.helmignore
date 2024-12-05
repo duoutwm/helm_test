@@ -16,6 +16,9 @@
 *.tmp
 *.orig
 *~
+*.tgz
+*.zip
+*.tar
 # Various IDEs
 .project
 .idea/
