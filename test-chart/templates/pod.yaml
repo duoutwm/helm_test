@@ -10,8 +10,8 @@ spec:
         - sh
         - -c
         - |
-          mkdir -p /mnt/data/{{ .Values.folderName }} && \
-          echo "Sample Image" > /mnt/data/{{ .Values.folderName }}{{ .Values.imagePath }} && \
+          mkdir -p /mnt/data{{ .Values.folderPath }} && \
+          echo "Sample Image" > /mnt/data{{ .Values.folderPath }}/{{ .Values.imagePath }} && \
           sleep 3600
       volumeMounts:
         - name: data-volume

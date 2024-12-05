@@ -122,5 +122,5 @@ tolerations: []
 
 affinity: {}
 
-folderName: folder1/images/  # Имя папки, которую мы создадим на сервере
+folderPath: /folder1/images  # Имя папки, которую мы создадим на сервере
 imageName: sample.png  # Путь, где будет сохранена картинка
