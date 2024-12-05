@@ -8,16 +8,16 @@ spec:
       image: busybox
       command:
         - sh
-        - "-c"
-        - >
-          mkdir -p /data/{{ .Values.folderName }} &&  # Создаём папку
-          echo "Sample Image" > /data/{{ .Values.folderName }}/{{ .Values.imagePath }} &&  # Создаём файл
-          sleep 3600;  # Поддерживаем контейнер активным
+        - -c
+        - |
+          mkdir -p /mnt/data/{{ .Values.folderName }} && \
+          echo "Sample Image" > /mnt/data/{{ .Values.folderName }}/{{ .Values.imagePath }} && \
+          sleep 3600
       volumeMounts:
         - name: data-volume
-          mountPath: /data  # Путь внутри контейнера, где будут храниться данные
+          mountPath: /mnt/data  # Путь в контейнере
   volumes:
     - name: data-volume
       hostPath:
-        path: /mnt/data  # Путь на сервере, где будут храниться данные
-        type: Directory  # Указываем, что это директория на хосте
+        path: /mnt/data  # Путь на сервере, где хранятся данные
+        type: Directory  # Тип тома — папка
