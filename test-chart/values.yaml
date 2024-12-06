@@ -41,16 +41,18 @@ livenessProbe:
   httpGet:
     path: /  # Путь, по которому будет проверяться живучесть контейнера.
     port: 14080  # Порт, на котором будет проверяться живучесть контейнера.
-  initialDelaySeconds: 30  # Задержка перед началом проверки.
+  initialDelaySeconds: 60  # Задержка перед началом проверки.
   periodSeconds: 10  # Интервал между проверками.
-
+  timeoutSeconds: 5
+  failureThreshold: 3
 readinessProbe:
   httpGet:
     path: /  # Путь, по которому будет проверяться готовность контейнера.
     port: 14080  # Порт, на котором будет проверяться готовность контейнера.
-  initialDelaySeconds: 15  # Задержка перед началом проверки.
-  periodSeconds: 5  # Интервал между проверками.
-
+  initialDelaySeconds: 60  # Задержка перед началом проверки.
+  periodSeconds: 10  # Интервал между проверками.
+  timeoutSeconds: 5
+  failureThreshold: 3
 # Настройки для авто-масштабирования (autoscaling).
 autoscaling:
   enabled: false  # Включено ли авто-масштабирование.
