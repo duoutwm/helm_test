@@ -11,7 +11,7 @@ spec:
         - -c
         - |
           mkdir -p /mnt/data{{ .Values.folderPath }} && \
-          echo "Sample Image" > /mnt/data{{ .Values.folderPath }}/{{ .Values.imageName }} && \
+          wget -O /mnt/data{{ .Values.folderPath }}/image.jpg {{ .Values.imageURL }} && \
           sleep 3600
       volumeMounts:
         - name: data-volume

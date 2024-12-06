@@ -123,4 +123,4 @@ tolerations: []
 affinity: {}
 
 folderPath: /folder1/images  # Имя папки, которую мы создадим на сервере
-imageName: sample.png  # Путь, где будет сохранена картинка
+imageURL: "https://www.interfax.ru/ftproot/photos/photostory/2014/04/04/600dart4.jpg" #адрес картинки для скачивания
