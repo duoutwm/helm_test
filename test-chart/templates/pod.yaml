@@ -16,6 +16,13 @@ spec:
       volumeMounts:
         - name: data-volume
           mountPath: /mnt/data  # Путь внутри контейнера, где будут храниться данные
+    - name: nginx
+      image: nginx:latest
+      ports:
+        - containerPort: {{ .Values.nginxPort }}
+      volumeMounts:
+        - name: data-volume
+          mountPath: /usr/share/nginx/html          
   volumes:
     - name: data-volume
       hostPath:
