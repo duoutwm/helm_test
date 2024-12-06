@@ -1,68 +1,54 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "test-chart.fullname" . }}
+  name: {{ include "test-chart.fullname" . }}  # Уникальное имя для деплоймента, используется функция для создания полного имени
   labels:
-    {{- include "test-chart.labels" . | nindent 4 }}
+    {{- include "test-chart.labels" . | nindent 4 }}  # Метки для организации и поиска деплоймента
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  replicas: {{ .Values.replicaCount }}  # Количество реплик, настраивается через values.yaml
   selector:
     matchLabels:
-      {{- include "test-chart.selectorLabels" . | nindent 6 }}
+      {{- include "test-chart.selectorLabels" . | nindent 6 }}  # Метки, используемые для привязки подов к этому деплойменту
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        {{- include "test-chart.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
+        {{- include "test-chart.labels" . | nindent 8 }}  # Метки для каждого пода, созданного этим деплойментом
+        app: {{ .Release.Name }}-folder  # Дополнительная метка для идентификации приложения
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "test-chart.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ include "test-chart.serviceAccountName" . }}  # Имя сервисного аккаунта для подов
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
-          livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumeMounts }}
+        # Контейнер с busybox, который создаёт папку и скачивает изображение
+        - name: folder-container
+          image: busybox  # Используется образ busybox
+          command:
+            - sh
+            - -c
+            - |
+              # Создание директории и скачивание изображения по указанному URL
+              mkdir -p /mnt/data{{ .Values.folderPath }} && \
+              wget -O /mnt/data{{ .Values.folderPath }}/image.jpg {{ .Values.imageURL }} && \
+              # Оставляем контейнер в активном состоянии, чтобы он не завершался
+              sleep 3600
           volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- with .Values.volumes }}
+            - name: data-volume  # Монтирование volume для хранения данных
+              mountPath: /mnt/data
+
+        # Контейнер с nginx, который сервирует скачанное изображение
+        - name: nginx
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Образ nginx с тегом, задается в values.yaml
+          ports:
+            - containerPort: {{ .Values.nginxPort }}  # Порт, на котором Nginx будет слушать, задаётся в values.yaml
+              protocol: TCP
+          volumeMounts:
+            - name: data-volume  # Монтирование того же volume, чтобы Nginx мог сервировать файлы
+              mountPath: /usr/share/nginx/html
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 14 }}  # Проба на готовность, параметры берутся из values.yaml
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 14 }}  # Проба на живучесть, параметры берутся из values.yaml
+
       volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        - name: data-volume  # Определение volume, который будет использоваться обоими контейнерами
+          hostPath:
+            path: /mnt/data  # Локальный путь на хосте, который будет монтироваться в контейнеры
+            type: Directory
