@@ -51,11 +51,10 @@ securityContext: {}
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
-  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-  type: ClusterIP
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
-  port: 80
-
+  type: NodePort  # Тип сервиса: ClusterIP, NodePort, или LoadBalancer
+  port: 14080  # Порт, на котором слушает сервис внутри кластера
+  targetPort: 14080  # Порт контейнера, который будет обслуживаться сервисом
+  nodePort: 32000  # Порт на ноде, через который можно подключаться снаружи (используется, если type = NodePort)
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false

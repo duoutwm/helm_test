@@ -5,11 +5,14 @@ metadata:
   labels:
     {{- include "test-chart.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.service.type }}  # Используем значение типа сервиса из values.yaml
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: {{ .Values.service.port }}  # Порт, открытый в сервисе (внутренний порт)
+      targetPort: {{ .Values.service.targetPort }}  # Порт в контейнере, который обслуживается сервисом
       protocol: TCP
       name: http
+      {{- if eq .Values.service.type "NodePort" }}
+      nodePort: {{ .Values.service.nodePort }}  # Порт на ноде, если используется NodePort
+      {{- end }}
   selector:
     {{- include "test-chart.selectorLabels" . | nindent 4 }}
