@@ -32,10 +32,26 @@ spec:
           volumeMounts:
             - name: data-volume  # Монтирование volume для хранения данных
               mountPath: /mnt/data
-
+        
         # Контейнер с nginx, который сервирует скачанное изображение
-        - name: nginx
+        - name: nginx  # Имя контейнера, которое будет отображаться в Kubernetes.
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Образ nginx с тегом, задается в values.yaml
+          command:
+            - sh  # Используем команду оболочки `sh` для выполнения последующих команд.
+            - -c  # Флаг для передачи нескольких команд в оболочке.
+            - |
+              # Создаем конфигурационный файл nginx:
+              echo 'server {
+                      listen {{ .Values.nginxPort }};  # Устанавливаем порт, на котором Nginx будет слушать (14080).
+                      server_name localhost;  # Устанавливаем имя сервера (localhost).
+
+                      location / {
+                          root /usr/share/nginx/html;  # Указываем корневую директорию, где будут находиться файлы для сервирования.
+                          index index.html index.htm;  # Указываем, какие файлы по умолчанию будут открываться при доступе.
+                      }
+                    }' > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
+              # Сохраняем вышеуказанную конфигурацию в файл `/etc/nginx/conf.d/default.conf`.
+              # Запускаем nginx с флагом `daemon off;`, чтобы процесс работал на переднем плане.         
           ports:
             - containerPort: {{ .Values.nginxPort }}  # Порт, на котором Nginx будет слушать, задаётся в values.yaml
               protocol: TCP
