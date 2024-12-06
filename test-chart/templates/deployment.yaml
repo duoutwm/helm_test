@@ -26,7 +26,7 @@ spec:
             - |
               # Создание директории и скачивание изображения по указанному URL
               mkdir -p /mnt/data{{ .Values.folderPath }} && \
-              wget -O /mnt/data{{ .Values.folderPath }}/image.jpg {{ .Values.imageURL }} && \
+              wget -O /mnt/data{{ .Values.folderPath }}/{{ .Values.imageName }} {{ .Values.imageURL }} && \
               # Оставляем контейнер в активном состоянии, чтобы он не завершался
               sleep 3600
           volumeMounts:
@@ -58,11 +58,25 @@ spec:
           volumeMounts:
             - name: data-volume  # Монтирование того же volume, чтобы Nginx мог сервировать файлы
               mountPath: /usr/share/nginx/html
-          readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 14 }}  # Проба на готовность, параметры берутся из values.yaml
+          # Добавляем livenessProbe, используя значения из values.yaml
           livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 14 }}  # Проба на живучесть, параметры берутся из values.yaml
+            httpGet:
+              path: {{ printf "%s/%s" .Values.folderPath .Values.imageName }}  # Генерируем путь динамически
+              port: {{ .Values.nginxPort }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
 
+          # Добавляем readinessProbe, используя значения из values.yaml
+          readinessProbe:
+            httpGet:
+              path: {{ printf "%s/%s" .Values.folderPath .Values.imageName }}  # Генерируем путь динамически
+              port: {{ .Values.nginxPort }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
       volumes:
         - name: data-volume  # Определение volume, который будет использоваться обоими контейнерами
           hostPath:

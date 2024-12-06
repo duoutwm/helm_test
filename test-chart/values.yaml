@@ -85,3 +85,5 @@ ingress:
 folderPath: /folder1/images  # Путь к папке, которую создаст контейнер busybox.
 imageURL: "https://www.interfax.ru/ftproot/photos/photostory/2014/04/04/600dart4.jpg"  # URL изображения для скачивания.
 nginxPort: 14080  # Порт, на котором Nginx будет сервировать картинку.
+# Название файла изображения.
+imageName: image.jpg
