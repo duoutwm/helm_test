@@ -14,5 +14,5 @@ spec:
       {{- if eq .Values.service.type "NodePort" }}
       nodePort: {{ .Values.service.nodePort }}  # Порт на ноде, если используется NodePort
       {{- end }}
-  selector:
-    {{- include "test-chart.selectorLabels" . | nindent 4 }}
+selector:
+    app: {{ .Release.Name }}-folder  # Явное указание метки для привязки к поду
