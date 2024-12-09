@@ -1,15 +1,16 @@
+# API-версия для Service
 apiVersion: v1
-kind: Service
+kind: Service  # Указывает, что мы создаем сервис
 metadata:
-  name: {{ include "postgres-chart.fullname" . }}
+  name: "{{ .Release.Name }}-postgres"  # Уникальное имя сервиса
   labels:
-    {{- include "postgres-chart.labels" . | nindent 4 }}
+    app: "{{ .Chart.Name }}"  # Метка для связи с другими объектами
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.service.type }}  # Тип сервиса: ClusterIP, NodePort, LoadBalancer
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
+  - port: {{ .Values.service.port }}  # Порт, по которому будет доступен сервис
+    targetPort: 5432  # Порт внутри контейнера PostgreSQL
+    nodePort: {{ .Values.service.nodePort | default 35432 }}  # Внешний порт (по умолчанию 32000)
+    protocol: TCP  # Используемый протокол
   selector:
-    {{- include "postgres-chart.selectorLabels" . | nindent 4 }}
+    app: "{{ .Chart.Name }}"  # Подключение к подам, которые имеют эту метку
