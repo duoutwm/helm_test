@@ -1,0 +1,48 @@
+# API-версия для StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet  # Указывает, что мы создаем StatefulSet
+metadata:
+  name: {{ .Release.Name }}-postgres  # Уникальное имя StatefulSet с учетом релиза
+  labels:
+    app: {{ .Chart.Name }}  # Метка, связывающая ресурсы в один чарт
+spec:
+  serviceName: {{ .Release.Name }}-postgres  # Имя связанного сервиса
+  replicas: 1  # Количество подов PostgreSQL
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}  # Условие для поиска связанных подов
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}  # Метка, привязывающая под к StatefulSet
+    spec:
+      containers:
+      - name: postgres  # Имя контейнера
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"  # Образ PostgreSQL
+        ports:
+        - containerPort: 5432  # Внутренний порт PostgreSQL
+          name: postgres
+        env:
+        - name: POSTGRES_USER  # Имя пользователя из переменной окружения
+          value: {{ .Values.postgresql.username }}
+        - name: POSTGRES_PASSWORD  # Пароль пользователя из переменной окружения
+          value: {{ .Values.postgresql.password }}
+        - name: POSTGRES_DB  # Имя базы данных из переменной окружения
+          value: {{ .Values.postgresql.database }}
+        volumeMounts:
+        - name: postgres-data  # Связь с томом для хранения данных
+          mountPath: /var/lib/postgresql/data  # Путь внутри контейнера для данных
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres-data  # Имя тома, используемого для хранения данных
+    spec:
+      accessModes:
+      - ReadWriteOnce  # Разрешение записи только одному поду
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size }}  # Размер хранилища (из values.yaml)
+  volumes:
+  - name: postgres-data
+    hostPath:
+      path: {{ .Values.persistence.path }}  # Подставляем путь из values.yaml
+      type: DirectoryOrCreate  # Если директория не существует, она будет создана
