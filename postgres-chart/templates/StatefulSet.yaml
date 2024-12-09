@@ -32,15 +32,6 @@ spec:
         volumeMounts:
         - name: postgres-data  # Связь с томом для хранения данных
           mountPath: /var/lib/postgresql/data  # Путь внутри контейнера для данных
-  volumeClaimTemplates:
-  - metadata:
-      name: postgres-data  # Имя тома, используемого для хранения данных
-    spec:
-      accessModes:
-      - ReadWriteOnce  # Разрешение записи только одному поду
-      resources:
-        requests:
-          storage: {{ .Values.persistence.size }}  # Размер хранилища (из values.yaml)
   volumes:
   - name: postgres-data
     hostPath:
