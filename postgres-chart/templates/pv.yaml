@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-postgres-pv  # Уникальное имя PV
+  labels:
+    app: {{ .Chart.Name }}
+spec:
+  capacity:
+    storage: {{ .Values.persistence.size }}  # Размер хранилища из values.yaml
+  accessModes:
+  - ReadWriteOnce  # Разрешение на запись одному поду
+  persistentVolumeReclaimPolicy: Retain  # PV сохраняется после удаления PVC
+  hostPath:
+    path: {{ .Values.persistence.path }}  # Путь на хосте из values.yaml
