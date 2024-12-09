@@ -52,7 +52,7 @@ securityContext: {}
 service:
   type: NodePort  # Указываем, что сервис должен быть доступен снаружи
   port: 5432  # Порт PostgreSQL
-  nodePort: 35432  # Фиксированный порт для внешнего подключения
+  nodePort: 30001  # Фиксированный порт для внешнего подключения
 # This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
 ingress:
   enabled: false

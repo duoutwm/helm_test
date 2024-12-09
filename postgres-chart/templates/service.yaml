@@ -10,7 +10,7 @@ spec:
   ports:
   - port: {{ .Values.service.port }}  # Порт, по которому будет доступен сервис
     targetPort: 5432  # Порт внутри контейнера PostgreSQL
-    nodePort: {{ .Values.service.nodePort | default 35432 }}  # Внешний порт (по умолчанию 32000)
+    nodePort: {{ .Values.service.nodePort | default 30001 }}  # Внешний порт (по умолчанию 30001)
     protocol: TCP  # Используемый протокол
   selector:
     app: "{{ .Chart.Name }}"  # Подключение к подам, которые имеют эту метку
