@@ -119,7 +119,7 @@ affinity: {}
 
 site:
   hostPath: "/var/lib/dblab/dblab_pool_02/site/"  # Путь на хосте.
-  mountPath: "/usr/share/nginx/html/"  # Путь внутри контейнера.
+  mountPath: "/usr/share/nginx/html"  # Путь внутри контейнера.
   page443: "page1"  # Название папки для страницы на порту 10443.
   page80: "page2"  # Название папки для страницы на порту 10080.
 
