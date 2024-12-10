@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1  # Версия API для Ingress.
+kind: Ingress  # Тип ресурса — Ingress.
+metadata:
+  name: nginx-ingress-test  # Имя Ingress.
+  annotations:  # Добавляем кастомные настройки для NGINX.
+    nginx.ingress.kubernetes.io/server-snippet: |
+      listen {{ .Values.ingress.ports.http }};  # Порт для HTTP (например, 10080).
+      location / {
+        root {{ .Values.site.mountPath }}/{{ .Values.site.page80 }};  # Используем путь для страницы с порта 10080.
+        index index.html;  # Файл, который будет отображаться.
+      }
+      listen {{ .Values.ingress.ports.https }} ssl;  # Порт для HTTPS (например, 10443).
+      location / {
+        root {{ .Values.site.mountPath }}/{{ .Values.site.page443 }};  # Используем путь для страницы с порта 10443.
+        index index.html;  # Файл, который будет отображаться.
+      }
+spec:
+  rules:  # Основные правила маршрутизации.
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-ingress-test  # Имя Service для перенаправления запросов.
+                port:
+                  number: {{ .Values.service.port }}  # Порт Service (из values.yaml).

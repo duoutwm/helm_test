@@ -1,0 +1,29 @@
+apiVersion: apps/v1  # Указываем версию API для создания ресурса Deployment.
+kind: Deployment  # Тип ресурса, который мы создаём — Deployment.
+metadata:
+  name: nginx-ingress-test  # Имя Deployment.
+  labels:
+    app: nginx-ingress-test  # Метка для идентификации.
+spec:
+  replicas: 1  # Количество подов (здесь один).
+  selector:
+    matchLabels:
+      app: nginx-ingress-test  # Метка, чтобы найти нужные поды.
+  template:  # Шаблон для создания подов.
+    metadata:
+      labels:
+        app: nginx-ingress-test  # Метка для подов.
+    spec:
+      containers:  # Определяем контейнеры для пода.
+        - name: nginx  # Имя контейнера.
+          image: nginx:latest  # Используем официальный образ NGINX.
+          volumeMounts:  # Монтируем volume с файлами сайта.
+            - name: site-content  # Имя volume.
+              mountPath: {{ .Values.site.mountPath }}  # Путь внутри контейнера (из values.yaml).
+          ports:
+            - containerPort: {{ .Values.nginx.containerPort }}  # Порт контейнера (из values.yaml).
+      volumes:  # Определяем volumes.
+        - name: site-content  # Имя volume.
+          hostPath:  # Используем директорию на хосте.
+            path: {{ .Values.site.hostPath }}  # Путь к файлам сайта на хосте (из values.yaml).
+            type: Directory  # Тип ресурса — директория.

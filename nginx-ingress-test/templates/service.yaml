@@ -1,0 +1,13 @@
+apiVersion: v1  # Указываем версию API для создания ресурса Service.
+kind: Service  # Тип ресурса — Service.
+metadata:
+  name: nginx-ingress-test  # Имя Service.
+  labels:
+    app: nginx-ingress-test  # Метка для связи с другими ресурсами.
+spec:
+  type: {{ .Values.service.type }}  # Определяем тип Service. ClusterIP — доступ только внутри кластера.
+  ports:
+    - port: {{ .Values.service.port }}  # Порт, который будет слушать Service (из values.yaml).
+      targetPort: {{ .Values.nginx.containerPort }}  # Порт контейнера, на который будет перенаправляться трафик (из values.yaml).
+  selector:
+    app: nginx-ingress-test  # Указываем, какие поды должны обслуживаться этим Service.
