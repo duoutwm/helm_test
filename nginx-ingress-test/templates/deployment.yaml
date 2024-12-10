@@ -34,9 +34,9 @@ spec:
                 location = /open {
                   root {{ .Values.site.mountPath }}/{{ .Values.site.page80 }};
                   index index.html;
-                  try_files $uri /index.html;
+                  try_files /index.html =404;
                 }
-                location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+                location / {
                   root {{ .Values.site.mountPath }}/{{ .Values.site.page80 }};
                 }
               }
@@ -47,9 +47,9 @@ spec:
                 location = /close {
                   root {{ .Values.site.mountPath }}/{{ .Values.site.page443 }};
                   index index.html;
-                  try_files $uri /index.html;
+                  try_files /index.html =404;
                 }
-                location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+                location / {
                   root {{ .Values.site.mountPath }}/{{ .Values.site.page443 }};
                 }
               }' > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
