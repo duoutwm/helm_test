@@ -32,18 +32,25 @@ spec:
                 listen {{ .Values.nginx.ports.http }};
                 server_name _;
 
-                location /open {
+                location = /open {
                     root {{ .Values.site.mountPath }}/{{ .Values.site.page80 }};
                     index index.html;
-                    autoindex on; # Включаем автоматическое отображение содержимого директории
                 }
 
-                location /close {
+                location ~ ^/open/(.*)$ {
+                    root {{ .Values.site.mountPath }}/{{ .Values.site.page80 }};
+                }
+
+                location = /close {
                     root {{ .Values.site.mountPath }}/{{ .Values.site.page443 }};
                     index index.html;
-                    autoindex on; # Включаем автоматическое отображение содержимого директории
+                }
+
+                location ~ ^/close/(.*)$ {
+                    root {{ .Values.site.mountPath }}/{{ .Values.site.page443 }};
                 }
               }
+
 
 
               EOF
