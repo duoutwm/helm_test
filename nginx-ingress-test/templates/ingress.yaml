@@ -1,16 +1,25 @@
-apiVersion: networking.k8s.io/v1  # Версия API для Ingress.
-kind: Ingress  # Тип ресурса — Ingress.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: nginx-ingress-test  # Имя Ingress.
+  name: nginx-ingress-test
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"  # Отключаем редирект на HTTPS.
 spec:
   rules:
-    - host: {{ .Values.ingress.host }}  # Хост для Ingress. Пустой для всех запросов.
+    - host: {{ .Values.ingress.host }}  # Хост для Ingress.
       http:
         paths:
-          - path: /
+          - path: /open  # HTTP-запросы на "/open".
             pathType: Prefix
             backend:
               service:
                 name: nginx-ingress-test  # Имя Service.
                 port:
-                  number: {{ .Values.service.port }}  # Порт Service из values.yaml.
+                  number: {{ .Values.nginx.ports.http }}  # HTTP-порт Service из values.yaml.
+          - path: /close  # HTTP-запросы на "/close".
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-ingress-test
+                port:
+                  number: {{ .Values.nginx.ports.https }}  # HTTPS-порт Service из values.yaml.
