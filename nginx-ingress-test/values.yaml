@@ -116,16 +116,18 @@ volumeMounts: []
 nodeSelector: {}
 tolerations: []
 affinity: {}
-nginx:
-  containerPort: 80  # Порт внутри контейнера.
 
 site:
   hostPath: "/var/lib/dblab/dblab_pool_02/site/"  # Путь на хосте.
   mountPath: "/usr/share/nginx/html"  # Путь внутри контейнера.
   page443: "page1"  # Название папки для страницы на порту 10443.
   page80: "page2"  # Название папки для страницы на порту 10080.
+
+nginx:
+  ports:
+    http: 10080  # HTTP-порт который слушает nginx.
+    https: 10443  # HTTPS-порт который слушает nginx.
+
 ingress:
   host: ""  # Укажи свой хост или оставь localhost для тестов.
-  ports:
-    http: 10080  # Нестандартный порт для HTTP.
-    https: 10443  # Нестандартный порт для HTTPS.
+  
