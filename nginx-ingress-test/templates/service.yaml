@@ -9,11 +9,9 @@ spec:
       protocol: TCP
       port: {{ .Values.nginx.ports.http }}  # HTTP-порт, который слушает Service.
       targetPort: {{ .Values.nginx.ports.http }}  # Порт внутри контейнера NGINX для HTTP.
-      nodePort: {{ .Values.nginx.ports.http }}  # Внешний порт для HTTP.
     - name: https
       protocol: TCP
       port: {{ .Values.nginx.ports.https }}  # HTTPS-порт, который слушает Service.
       targetPort: {{ .Values.nginx.ports.https }}  # Порт внутри контейнера NGINX для HTTPS.
-      nodePort: {{ .Values.nginx.ports.https }}  # Внешний порт для HTTPS.
   selector:
     app: nginx-ingress-test  # Соединяем с подами.
