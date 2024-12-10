@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: nginx-ingress-test  # Имя Service.
 spec:
-  type: NodePort  # Тип Service, чтобы обрабатывать внешние запросы.
+  type: {{ .Values.service.type }}  # Тип Service, чтобы обрабатывать внешние запросы.Берётся из values
   ports:
     - name: http
       protocol: TCP
