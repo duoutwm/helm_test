@@ -35,7 +35,7 @@ spec:
                   location /open {
                       root {{ .Values.site.mountPath }}/{{ .Values.site.page80 }};
                       index index.html;
-                      try_files $uri $uri/ /index.html =404;
+                      try_files $uri /index.html;
                   }
               }
 
@@ -46,27 +46,7 @@ spec:
                   location /close {
                       root {{ .Values.site.mountPath }}/{{ .Values.site.page443 }};
                       index index.html;
-                      try_files $uri $uri/ /index.html =404;
-                  }
-              }
-              server {
-                  listen {{ .Values.nginx.ports.http }};
-                  server_name _;
-
-                  # Обработка всех запросов на статические файлы
-                  location / {
-                      root {{ .Values.site.mountPath }};
-                      try_files $uri /index.html =404;
-                  }
-              }
-              server {
-                  listen {{ .Values.nginx.ports.https }};
-                  server_name _;
-
-                  # Обработка всех запросов на статические файлы
-                  location / {
-                      root {{ .Values.site.mountPath }};
-                      try_files $uri /index.html =404;
+                      try_files $uri /index.html;
                   }
               }
               EOF
