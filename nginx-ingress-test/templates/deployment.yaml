@@ -30,23 +30,24 @@ spec:
               echo 'server {
                 listen {{ .Values.nginx.ports.http }};
                 server_name _;
-                
+
                 # Обработка /open
                 location /open {
-                  root {{ .Values.site.mountPath }}/{{ .Values.site.page80 }};
+                  alias {{ .Values.site.mountPath }}/{{ .Values.site.page80 }};
                   index index.html;
                 }
               }
               server {
                 listen {{ .Values.nginx.ports.https }};
                 server_name _;
-                
+
                 # Обработка /close
                 location /close {
-                  root {{ .Values.site.mountPath }}/{{ .Values.site.page443 }};
+                  alias {{ .Values.site.mountPath }}/{{ .Values.site.page443 }};
                   index index.html;
                 }
               }' > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
+
       volumes:  # Определяем volumes.
         - name: site-content  # Имя volume.
           hostPath:  # Используем директорию на хосте.
