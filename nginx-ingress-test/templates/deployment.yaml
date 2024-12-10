@@ -36,6 +36,9 @@ spec:
                   index index.html;
                   try_files $uri /index.html;
                 }
+                location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+                  root {{ .Values.site.mountPath }}/{{ .Values.site.page80 }};
+                }
               }
               server {
                 listen {{ .Values.nginx.ports.https }};
@@ -46,8 +49,10 @@ spec:
                   index index.html;
                   try_files $uri /index.html;
                 }
+                location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+                  root {{ .Values.site.mountPath }}/{{ .Values.site.page443 }};
+                }
               }' > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'
-
       volumes:  # Определяем volumes.
         - name: site-content  # Имя volume.
           hostPath:  # Используем директорию на хосте.
