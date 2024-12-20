@@ -18,7 +18,7 @@ spec:
       containers:
         - name: postgres # Имя контейнера
           image: {{ .Values.cloudnativepg.image.repository }}:{{ .Values.cloudnativepg.image.tag }} # Docker-образ PostgreSQL
-          imagePullPolicy: "{ { .Values.cloudnativepg.image.pullPolicy } }" # Политика загрузки образов (например, "IfNotPresent")
+          imagePullPolicy: {{ .Values.cloudnativepg.image.pullPolicy }} # Политика загрузки образов (например, "IfNotPresent")
           ports:
             - containerPort: 5432 # Порт, на котором PostgreSQL будет слушать подключения
           volumeMounts: # Настройка томов для хранения данных
