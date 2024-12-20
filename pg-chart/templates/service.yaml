@@ -1,0 +1,15 @@
+apiVersion: v1 # Версия API для сервиса
+kind: Service # Тип Kubernetes-ресурса
+metadata:
+  name: {{ .Values.cloudnativepg.clusterName }}-service # Имя сервиса
+  labels:
+    app: postgres-cluster # Метка для идентификации
+spec:
+  type: {{ .Values.cloudnativepg.service.type }} # Тип сервиса (например, ClusterIP)
+  ports:
+    - port: {{ .Values.cloudnativepg.service.port }} # Внешний порт, по которому будет доступна база
+      targetPort: 5432 # Порт внутри контейнера
+      protocol: TCP # Используем протокол TCP для PostgreSQL
+  selector:
+    app: postgres-cluster # Подключаем поды с меткой postgres-cluster
+

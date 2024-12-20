@@ -1,0 +1,30 @@
+# Настройки для CloudNativePG
+cloudnativepg:
+  clusterName: my-postgres-cluster # Название кластера PostgreSQL
+  replicas: 3 # Количество реплик в кластере
+  image:
+    repository: ghcr.io/cloudnative-pg/postgres # Официальный образ CloudNativePG
+    tag: "15.4" # Версия PostgreSQL
+    pullPolicy: IfNotPresent # Политика загрузки образа
+
+  # Настройки ресурсов для контейнеров PostgreSQL
+  resources:
+    requests:
+      memory: "512Mi" # Минимум 512 МБ памяти
+      cpu: "250m" # Минимум 250 миллиядер процессора
+    limits:
+      memory: "1Gi" # Максимум 1 ГБ памяти
+      cpu: "500m" # Максимум 500 миллиядер процессора
+
+  # Настройки хранилища
+  persistence:
+    size: 1Gi # Размер хранилища для каждой реплики
+    storageClass: "" # Используется стандартный класс хранилища
+    mountPath: /var/lib/postgresql/data # Путь внутри контейнера для данных
+    hostPath: "/var/lib/dblab/dblab_pool_01/data/" # Хостовая директория для хранения данных
+  service:
+    type: ClusterIP # Тип сервиса
+    port: 5432 # Порт PostgreSQL
+  ingress:
+    enabled: true # Включить Ingress
+    host: "dblabwebtest.exist.ua" # Домен или IP для подключения

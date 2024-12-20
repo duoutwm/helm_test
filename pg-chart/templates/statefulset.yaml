@@ -1,0 +1,36 @@
+apiVersion: apps/v1 # Версия API для ресурса StatefulSet
+kind: StatefulSet # Тип Kubernetes-ресурса, который управляет состоянием приложения (PostgreSQL-кластера)
+metadata:
+  name: {{.Values.cloudnativepg.clusterName}} # Имя StatefulSet, задаётся в values.yaml
+  labels:
+    app: postgres-cluster # Метка для идентификации PostgreSQL-кластера
+spec:
+  replicas: {{.Values.cloudnativepg.replicas}} # Количество реплик, указанных в values.yaml
+  selector:
+    matchLabels:
+      app: postgres-cluster # Используется для привязки подов к StatefulSet
+  serviceName: {{ .Values.cloudnativepg.clusterName }}-service # Сервис для связи между репликами
+  template: # Шаблон для создания подов
+    metadata:
+      labels:
+        app: postgres-cluster # Метка для подов, чтобы их можно было находить через сервис
+    spec:
+      containers:
+        - name: postgres # Имя контейнера
+          image: {{ .Values.cloudnativepg.image.repository }}:{{ .Values.cloudnativepg.image.tag }} # Docker-образ PostgreSQL
+          imagePullPolicy: "{ { .Values.cloudnativepg.image.pullPolicy } }" # Политика загрузки образов (например, "IfNotPresent")
+          ports:
+            - containerPort: 5432 # Порт, на котором PostgreSQL будет слушать подключения
+          volumeMounts: # Настройка томов для хранения данных
+            - name: pg-data # Имя тома для хранения данных PostgreSQL
+              mountPath: {{ .Values.cloudnativepg.persistence.mountPath }} # Путь в контейнере, где будут храниться данные
+  volumeClaimTemplates: # Шаблоны для настройки постоянного хранилища
+    - metadata:
+        name: pg-data # Имя тома
+      spec:
+        accessModes: ["ReadWriteOnce"] # Режим доступа: запись/чтение только одним подом
+        resources:
+          requests:
+            storage: {{ .Values.cloudnativepg.persistence.size }} # Объём хранилища, заданный в values.yaml
+        hostPath:
+          path: {{ .Values.cloudnativepg.persistence.hostPath }} # Путь на хосте, где будут храниться данные

@@ -1,0 +1,6 @@
+apiVersion: v2  # Версия API Helm
+name: pg-chart  # Имя чарта
+description: A Helm chart for deploying PostgreSQL with CloudNativePG  # Описание чарта
+type: application  # Тип чарта — приложение (а не библиотека)
+version: 0.1.0  # Версия чарта
+appVersion: "15"  # Версия PostgreSQL (здесь 15-я версия как пример)

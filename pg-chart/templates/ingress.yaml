@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1 # Версия API для Ingress
+kind: Ingress # Тип ресурса Ingress
+metadata:
+  name: {{ .Values.cloudnativepg.clusterName }}-ingress # Имя Ingress
+  labels:
+    app: postgres-cluster # Метка для идентификации
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: / # Перенаправление запросов на корень
+spec:
+  rules:
+    - host: {{ .Values.cloudnativepg.ingress.host }} # Хост, указанный в values.yaml
+      http:
+        paths:
+          - path: /
+            pathType: Prefix # Указываем тип пути (Prefix — стандартный)
+            backend:
+              service:
+                name: {{ .Values.cloudnativepg.clusterName }}-service # Имя связанного сервиса
+                port:
+                  number: {{ .Values.cloudnativepg.service.port }} # Порт сервиса
