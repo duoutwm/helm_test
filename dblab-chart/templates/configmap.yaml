@@ -9,19 +9,16 @@ data:
   config.yml: |
     version: 2
     server:
-      host: {{ .Values.config.server.host }}
-      port: {{ .Values.config.server.port }}
+      host: 0.0.0.0
+      port: 2345
       embeddedUI:
-        enabled: {{ .Values.config.server.embeddedUI.enabled }}
-        dockerImage: "{{ .Values.config.server.embeddedUI.dockerImage }}"
-        host: {{ .Values.config.server.embeddedUI.host }}
-        port: {{ .Values.config.server.embeddedUI.port }}
+        enabled: false
       ssl:
-        enabled: {{ .Values.config.server.ssl.enabled }}
+        enabled: false
     engine:
       db:
-        host: {{ .Values.config.engine.db.host }}
-        port: {{ .Values.config.engine.db.port }}
-        user: {{ .Values.config.engine.db.user }}
-        password: {{ .Values.config.engine.db.password }}
-        dbname: {{ .Values.config.engine.db.dbname }}
+        host: dblabwebtest.exist.ua
+        port: 30032
+        user: postgres
+        password: strs5348
+        dbname: postgres
