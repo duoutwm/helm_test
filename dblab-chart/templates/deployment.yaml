@@ -16,6 +16,10 @@ spec:
       - name: {{ .Release.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - /bin/bash
+        - -c
+        - sleep infinity
         ports:
           - containerPort: {{ .Values.ports.api }}
             name: api
@@ -28,4 +32,4 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: {{ .Release.Name }}-config
+          name: test1-config
