@@ -13,7 +13,7 @@ spec:
         app: {{ .Release.Name }}
     spec:
       imagePullSecrets:
-        - name: {{ .Values.imagePullSecrets[0].name }}
+        - name: {{ .Values.imagePullSecrets }}
       containers:
         - name: {{ .Release.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
