@@ -1,6 +1,6 @@
 image:
   repository: postgresai/dblab-server
-  tag: latest
+  tag: 3.3-latest
   pullPolicy: IfNotPresent
 
 config:
