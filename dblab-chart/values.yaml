@@ -1,15 +1,15 @@
 image:
   repository: postgresai/dblab-server
-  tag: 3.3-latest
+  tag: "3.3-latest"
   pullPolicy: IfNotPresent
 
 config:
-  version: 2
   server:
     host: 0.0.0.0
     port: 2345
-    ui:
+    embeddedUI:
       enabled: true
+      dockerImage: "postgresai/dblab-ui:latest"
       host: 0.0.0.0
       port: 8080
     ssl:
@@ -25,4 +25,3 @@ config:
 ports:
   api: 2345
   ui: 8080
-  postgres: "6000-6100"

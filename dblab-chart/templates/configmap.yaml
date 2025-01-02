@@ -1,25 +1,27 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: test1-config
+  name: {{ .Release.Name }}-config
   namespace: default
+  labels:
+    app: {{ .Release.Name }}
 data:
   config.yml: |
     version: 2
     server:
-      host: 0.0.0.0
-      port: 2345
+      host: {{ .Values.config.server.host }}
+      port: {{ .Values.config.server.port }}
       embeddedUI:
-        enabled: true
-        dockerImage: "postgresai/dblab-ui:latest"
-        host: 0.0.0.0
-        port: 8080
+        enabled: {{ .Values.config.server.embeddedUI.enabled }}
+        dockerImage: "{{ .Values.config.server.embeddedUI.dockerImage }}"
+        host: {{ .Values.config.server.embeddedUI.host }}
+        port: {{ .Values.config.server.embeddedUI.port }}
       ssl:
-        enabled: false
+        enabled: {{ .Values.config.server.ssl.enabled }}
     engine:
       db:
-        host: dblabwebtest.exist.ua
-        port: 30032
-        user: postgres
-        password: strs5348
-        dbname: postgres
+        host: {{ .Values.config.engine.db.host }}
+        port: {{ .Values.config.engine.db.port }}
+        user: {{ .Values.config.engine.db.user }}
+        password: {{ .Values.config.engine.db.password }}
+        dbname: {{ .Values.config.engine.db.dbname }}

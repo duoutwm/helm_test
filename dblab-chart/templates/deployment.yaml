@@ -18,16 +18,16 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
         - /home/dblab/bin/dblab-server
+        ports:
+          - containerPort: {{ .Values.config.server.port }}
+            name: api
+          - containerPort: {{ .Values.config.server.embeddedUI.port }}
+            name: ui
         volumeMounts:
           - name: config-volume
             mountPath: /home/dblab/configs/server.yml
             subPath: config.yml
-        ports:
-          - containerPort: {{ .Values.ports.api }}
-            name: api
-          - containerPort: {{ .Values.ports.ui }}
-            name: ui
       volumes:
       - name: config-volume
         configMap:
-          name: test1-config
+          name: {{ .Release.Name }}-config
