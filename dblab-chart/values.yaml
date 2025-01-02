@@ -3,3 +3,5 @@ image:
   repository: ghcr.io/duoutwm/custom-dblab  # Ссылка на наш Docker-образ
   tag: latest                              # Тег образа
   pullPolicy: IfNotPresent                 # Политика загрузки образа
+imagePullSecrets:
+  - name: ghcr-secret
