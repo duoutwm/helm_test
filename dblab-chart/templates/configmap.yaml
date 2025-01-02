@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  config.yml: |
+    version: {{ .Values.config.version }}
+    server:
+      host: {{ .Values.config.server.host }}
+      port: {{ .Values.config.server.port }}
+      ui:
+        enabled: {{ .Values.config.server.ui.enabled }}
+        host: {{ .Values.config.server.ui.host }}
+        port: {{ .Values.config.server.ui.port }}
+      ssl:
+        enabled: {{ .Values.config.server.ssl.enabled }}
+    engine:
+      db:
+        host: {{ .Values.config.engine.db.host }}
+        port: {{ .Values.config.engine.db.port }}
+        user: {{ .Values.config.engine.db.user }}
+        password: {{ .Values.config.engine.db.password }}
+        dbname: {{ .Values.config.engine.db.dbname }}

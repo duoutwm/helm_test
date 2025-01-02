@@ -1,7 +1,28 @@
-# Конфигурация образа
 image:
-  repository: ghcr.io/duoutwm/custom-dblab  # Ссылка на наш Docker-образ
-  tag: latest                              # Тег образа
-  pullPolicy: IfNotPresent                 # Политика загрузки образа
-imagePullSecrets:
-  - name: ghcr-secret
+  repository: postgresai/dblab-server
+  tag: latest
+  pullPolicy: IfNotPresent
+
+config:
+  version: 2
+  server:
+    host: 0.0.0.0
+    port: 2345
+    ui:
+      enabled: true
+      host: 0.0.0.0
+      port: 8080
+    ssl:
+      enabled: false
+  engine:
+    db:
+      host: dblabwebtest.exist.ua
+      port: 30032
+      user: postgres
+      password: strs5348
+      dbname: postgres
+
+ports:
+  api: 2345
+  ui: 8080
+  postgres: "6000-6100"

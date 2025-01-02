@@ -12,11 +12,20 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
-      imagePullSecrets:
-        {{- range .Values.imagePullSecrets }}
-        - name: {{ .name }}
-        {{- end }}
       containers:
-        - name: {{ .Release.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+      - name: {{ .Release.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+          - containerPort: {{ .Values.ports.api }}
+            name: api
+          - containerPort: {{ .Values.ports.ui }}
+            name: ui
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/dblab/config.yml
+            subPath: config.yml
+      volumes:
+      - name: config-volume
+        configMap:
+          name: {{ .Release.Name }}-config
