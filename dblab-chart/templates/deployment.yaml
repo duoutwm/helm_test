@@ -21,11 +21,10 @@ spec:
         - |
           apt-get update && \
           apt-get install -y docker.io && \
-          cp /usr/bin/docker /opt/docker && \
-          chmod +x /opt/docker
+          dockerd --host=unix:///var/run/docker.sock &
         volumeMounts:
-        - name: docker-binary
-          mountPath: /opt/docker
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
       containers:
       - name: {{ .Release.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -33,8 +32,8 @@ spec:
         command:
         - /home/dblab/bin/dblab-server
         volumeMounts:
-        - name: docker-binary
-          mountPath: /usr/bin/docker
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
         - name: config-volume
           mountPath: /home/dblab/configs/server.yml
           subPath: config.yml
@@ -44,7 +43,7 @@ spec:
         - containerPort: {{ .Values.config.server.embeddedUI.port }}
           name: ui
       volumes:
-      - name: docker-binary
+      - name: docker-socket
         emptyDir: {}
       - name: config-volume
         configMap:
