@@ -9,8 +9,9 @@ data:
     server:
       host: 0.0.0.0
       port: 2345
-      ui:
+      embeddedUI:
         enabled: true
+        dockerImage: "postgresai/dblab-ui:latest"
         host: 0.0.0.0
         port: 8080
       ssl:

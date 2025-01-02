@@ -17,18 +17,16 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
-        - /bin/bash
-        - -c
-        - sleep infinity
+        - /home/dblab/bin/dblab-server
+        volumeMounts:
+          - name: config-volume
+            mountPath: /home/dblab/configs/server.yml
+            subPath: config.yml
         ports:
           - containerPort: {{ .Values.ports.api }}
             name: api
           - containerPort: {{ .Values.ports.ui }}
             name: ui
-        volumeMounts:
-          - name: config-volume
-            mountPath: /etc/dblab/config.yml
-            subPath: config.yml
       volumes:
       - name: config-volume
         configMap:
