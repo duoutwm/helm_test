@@ -12,22 +12,40 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      initContainers:
+      - name: install-docker
+        image: ubuntu:22.04
+        command:
+        - /bin/bash
+        - -c
+        - |
+          apt-get update && \
+          apt-get install -y docker.io && \
+          cp /usr/bin/docker /opt/docker && \
+          chmod +x /opt/docker
+        volumeMounts:
+        - name: docker-binary
+          mountPath: /opt/docker
       containers:
       - name: {{ .Release.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
         - /home/dblab/bin/dblab-server
-        ports:
-          - containerPort: {{ .Values.config.server.port }}
-            name: api
-          - containerPort: {{ .Values.config.server.embeddedUI.port }}
-            name: ui
         volumeMounts:
-          - name: config-volume
-            mountPath: /home/dblab/configs/server.yml
-            subPath: config.yml
+        - name: docker-binary
+          mountPath: /usr/bin/docker
+        - name: config-volume
+          mountPath: /home/dblab/configs/server.yml
+          subPath: config.yml
+        ports:
+        - containerPort: {{ .Values.config.server.port }}
+          name: api
+        - containerPort: {{ .Values.config.server.embeddedUI.port }}
+          name: ui
       volumes:
+      - name: docker-binary
+        emptyDir: {}
       - name: config-volume
         configMap:
           name: {{ .Release.Name }}-config
