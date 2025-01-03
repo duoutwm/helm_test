@@ -20,7 +20,6 @@ spec:
             privileged: true            # Для DinD нужен привилегированный режим
           command: [ "dockerd" ]        # Запуск Docker Daemon
           args:
-            - "--host=unix:///var/run/docker.sock"  # Unix-сокет Docker
             - "--host=tcp://0.0.0.0:2375"           # (Необязательный) TCP-порт
           ports:
             - containerPort: 2375       # Порт, на котором слушает Docker Daemon (TCP)
@@ -54,8 +53,3 @@ spec:
             # Указываем, что dbLab должен использовать TCP
             - name: DOCKER_HOST
               value: "tcp://127.0.0.1:2375"
-
-      # Общий том для сокета Docker
-      volumes:
-        - name: docker-sock
-          emptyDir: {}
