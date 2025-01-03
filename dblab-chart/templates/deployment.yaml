@@ -1,52 +1,61 @@
 apiVersion: apps/v1                      # API-версия для Deployment
-kind: Deployment                         # Говорим, что создаём Deployment
+kind: Deployment                         # Объект - Deployment
 metadata:
-  name: "{{ .Release.Name }}-deployment" # Название Deployment, зависящее от имени релиза
+  name: "{{ .Release.Name }}-deployment" # Название (зависит от имени релиза)
 spec:
-  replicas: {{ .Values.replicas }}       # Сколько подов развернуть (читаем из values.yaml)
+  replicas: {{ .Values.replicas }}       # Количество подов (реплик)
   selector:
     matchLabels:
-      app: "{{ .Release.Name }}-dind"    # Метка, по которой находим нужные поды
+      app: "{{ .Release.Name }}-dind"    # Метка, по которой Deployment выбирает поды
   template:
     metadata:
       labels:
-        app: "{{ .Release.Name }}-dind"  # Этой меткой мы "связываем" pod с selector
+        app: "{{ .Release.Name }}-dind"  # Должна совпадать с selector
     spec:
       containers:
         # --- (1) Контейнер с Docker-in-Docker ---
-        - name: dind                                  # Имя контейнера
-          image: "{{ .Values.image }}:{{ .Values.tag }}" 
+        - name: dind
+          image: "{{ .Values.image }}:{{ .Values.tag }}"
           securityContext:
-            privileged: true                          # DinD требует привилегированный режим
-          command: [ "dockerd" ]                      # Запуск Docker-демона
+            privileged: true            # Для DinD нужен привилегированный режим
+          command: [ "dockerd" ]        # Запуск Docker Daemon
           args:
-            - "--host=unix:///var/run/docker.sock"     # Создаём Unix-сокет для Docker
-            - "--host=tcp://0.0.0.0:2375"              # (Необязательно) Открываем TCP-порт
+            - "--host=unix:///var/run/docker.sock"  # Unix-сокет Docker
+            - "--host=tcp://0.0.0.0:2375"           # (Необязательный) TCP-порт
           ports:
-            - containerPort: 2375                      # Порт, на котором слушает Docker Daemon (TCP)
+            - containerPort: 2375       # Порт, на котором слушает Docker Daemon (TCP)
           volumeMounts:
             - name: docker-sock
-              mountPath: /var/run/docker.sock          # Общий сокет в томе
+              mountPath: /var/run/docker.sock  # Общий сокет для Docker
 
         # --- (2) Контейнер с dbLab ---
         - name: dblab
           image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"
           env:
-            - name: DBLAB_HOST
-              value: "{{ .Values.dblab.host }}"
-            - name: DBLAB_PORT
-              value: "{{ .Values.dblab.port | quote }}"
-            - name: DBLAB_USER
-              value: "{{ .Values.dblab.user }}"
-            - name: DBLAB_PASSWORD
-              value: "{{ .Values.dblab.password }}"
-            - name: DBLAB_DBNAME
-              value: "{{ .Values.dblab.dbname }}"
-          # Чтобы dbLab мог обращаться к Docker-демону
+            # Рекомендуется передавать строку подключения через PG_CONNECTION_STRING:
+            - name: PG_CONNECTION_STRING
+              value: "postgresql://{{ .Values.dblab.user }}:{{ .Values.dblab.password }}@{{ .Values.dblab.host }}:{{ .Values.dblab.port }}/{{ .Values.dblab.dbname }}"
+            
+            # Пароль для админского Web-UI
+            - name: ADMIN_PASSWORD
+              value: "{{ .Values.dblab.dbAdminPassword }}"
+
+            # Отключить HTTPS, если нет сертификата (по документации dbLab)
+            - name: DBLAB_NO_SSL
+              value: "1"
+
+            # dbLab по умолчанию слушает 127.0.0.1, если нужно, выставим на 0.0.0.0:
+            - name: DBLAB_LISTEN_HOST
+              value: "0.0.0.0"
+
+            # Порт, на котором доступно Web-UI и API dbLab
+            - name: DBLAB_LISTEN_PORT
+              value: "2345"
           volumeMounts:
             - name: docker-sock
-              mountPath: /var/run/docker.sock          # Монтируем тот же сокет внутри второго контейнера
+              mountPath: /var/run/docker.sock  # Монтируем тот же Docker-сокет
 
+      # Общий том для сокета Docker
       volumes:
         - name: docker-sock
-          emptyDir: {}                                 # emptyDir volume для хранения сокета
+          emptyDir: {}

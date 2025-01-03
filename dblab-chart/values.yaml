@@ -1,14 +1,18 @@
 # --- Параметры для Docker-in-Docker ---
-image: "docker"               # Базовый репозиторий
-tag: "24.0.5-dind"            # Конкретная версия с пометкой dind
-replicas: 1                   # Сколько подов (Deployment реплик) будет
+image: "docker"               # Базовый репозиторий Docker
+tag: "24.0.5-dind"            # Конкретная версия DinD
+replicas: 1                   # Количество подов (реплик)
 
 # --- Параметры для dbLab ---
 dblab:
-  image: "postgresai/dblab-server"  # Официальный репозиторий dbLab
-  tag: "1.11.1"                     # Конкретная версия (на момент написания)
-  host: "dblabwebtest.exist.ua"     # Хост вашей внешней Postgres
-  port: 30032                       # Порт
-  user: "postgres"                  # Пользователь
-  password: "strs5348"             # Пароль
-  dbname: "postgres"               # Имя базы
+  image: "postgresai/dblab-server"     # Официальный репозиторий dbLab
+  tag: "1.14.1"                        # Актуальная стабильная версия (по данным Docker Hub)
+  dbAdminPassword: "supersecret"       # Пароль для веб-UI админа (ADMIN_PASSWORD)
+  
+  # Параметры подключения к PostgreSQL:
+  host: "dblabwebtest.exist.ua"
+  port: 30032
+  user: "postgres"
+  password: "strs5348"
+  dbname: "postgres"
+  # По документации dbLab рекомендует передавать это одной строкой в PG_CONNECTION_STRING.
