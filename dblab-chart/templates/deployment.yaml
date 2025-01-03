@@ -26,8 +26,11 @@ spec:
               # Проверяем, если сокет занят
               if [ -e /var/run/docker.sock ]; then
                 echo "Docker socket exists, trying to kill processes using it"
-                # Ищем процессы, которые используют сокет, и завершаем их
-                lsof /var/run/docker.sock | awk '{print $2}' | tail -n +2 | xargs kill -9 || true
+                # Извлекаем PIDs процессов, использующих сокет, и завершает их
+                for pid in $(lsof -t /var/run/docker.sock); do
+                  echo "Killing process with PID $pid"
+                  kill -9 $pid || true  # Завершаем процесс
+                done
                 rm -rf /var/run/docker.sock  # Удаляем сокет
               fi
               apt-get install -y apt-transport-https ca-certificates curl software-properties-common
