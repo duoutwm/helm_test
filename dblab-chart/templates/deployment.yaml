@@ -20,26 +20,15 @@ spec:
             - -c
             - |
               set -e
-              # Устанавливаем procps для kill
+              # Устанавливаем procps для killall
               apt-get update
               apt-get install -y procps
-              # Принудительно завершаем все процессы, использующие сокет
+              # Принудительно завершаем все процессы Docker
               echo "Checking for running Docker processes"
-              for pid in $(ps aux | grep -E 'dockerd|docker' | grep -v 'grep' | awk '{print $2}'); do
-                echo "Killing process with PID $pid"
-                kill -9 $pid || true  # Принудительно завершаем процесс
-              done
-              # Убедимся, что сокет можно удалить
-              if [ -e /var/run/docker_new.sock ]; then
-                echo "Removing existing docker_new.sock"
-                rm -rf /var/run/docker_new.sock  # Удаляем сокет
-              fi
-              # Повторно проверяем сокет через несколько секунд
-              sleep 1
-              if [ -e /var/run/docker_new.sock ]; then
-                echo "Attempting to remove docker_new.sock again"
-                rm -rf /var/run/docker_new.sock  # Пробуем ещё раз удалить сокет
-              fi
+              killall -9 dockerd || true
+              # Очищаем директорию от любых старых данных
+              rm -rf /var/run/docker_new.sock || true
+              rm -rf /var/run/* || true
               # Установка Docker
               apt-get install -y apt-transport-https ca-certificates curl software-properties-common
               curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
