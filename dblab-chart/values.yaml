@@ -1,3 +1,14 @@
-image: "docker"
-tag: "24.0.5-dind"
-replicas: 1
+# --- Параметры для Docker-in-Docker ---
+image: "docker"               # Базовый репозиторий
+tag: "24.0.5-dind"            # Конкретная версия с пометкой dind
+replicas: 1                   # Сколько подов (Deployment реплик) будет
+
+# --- Параметры для dbLab ---
+dblab:
+  image: "postgresai/dblab-server"  # Официальный репозиторий dbLab
+  tag: "1.11.1"                     # Конкретная версия (на момент написания)
+  host: "dblabwebtest.exist.ua"     # Хост вашей внешней Postgres
+  port: 30032                       # Порт
+  user: "postgres"                  # Пользователь
+  password: "strs5348"             # Пароль
+  dbname: "postgres"               # Имя базы
