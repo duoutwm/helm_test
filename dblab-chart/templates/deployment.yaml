@@ -20,18 +20,22 @@ spec:
             - -c
             - |
               set -e
-              # Проверяем, если dockerd использует сокет, и убиваем процесс
+              # Установим lsof для поиска процессов, использующих сокет
+              apt-get update
+              apt-get install -y lsof
+              # Проверяем, если сокет занят
               if [ -e /var/run/docker.sock ]; then
                 echo "Docker socket exists, trying to kill processes using it"
-                fuser -k /var/run/docker.sock || true  # Завершаем процесс, использующий сокет
+                # Ищем процессы, которые используют сокет, и завершаем их
+                lsof /var/run/docker.sock | awk '{print $2}' | tail -n +2 | xargs kill -9 || true
                 rm -rf /var/run/docker.sock  # Удаляем сокет
               fi
-              apt-get update
               apt-get install -y apt-transport-https ca-certificates curl software-properties-common
               curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
               add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
               apt-get update
               apt-get install -y docker-ce
+              # Запускаем Docker в фоновом режиме
               dockerd --host=unix:///var/run/docker.sock &
               sleep 5
               while ! docker ps >/dev/null 2>&1; do sleep 2; done
