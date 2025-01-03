@@ -20,25 +20,35 @@ spec:
             - -c
             - |
               set -e
-              # Устанавливаем procps для killall
+              echo "Installing required tools..."
               apt-get update
               apt-get install -y procps
-              # Принудительно завершаем все процессы Docker
-              echo "Checking for running Docker processes"
-              killall -9 dockerd || true
-              # Очищаем директорию от любых старых данных
-              rm -rf /var/run/docker_new.sock || true
-              rm -rf /var/run/* || true
-              # Установка Docker
+
+              echo "Checking and cleaning /var/run/docker_new.sock..."
+              if [ -e /var/run/docker_new.sock ]; then
+                if [ -d /var/run/docker_new.sock ]; then
+                  echo "Removing directory at /var/run/docker_new.sock"
+                  rm -rf /var/run/docker_new.sock
+                else
+                  echo "Removing file at /var/run/docker_new.sock"
+                  rm -f /var/run/docker_new.sock
+                fi
+              fi
+
+              echo "Installing Docker..."
               apt-get install -y apt-transport-https ca-certificates curl software-properties-common
               curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
               add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
               apt-get update
               apt-get install -y docker-ce
-              # Запуск Docker в фоновом режиме с новым сокетом
+
+              echo "Starting Docker daemon..."
               dockerd --host=unix:///var/run/docker_new.sock &
               sleep 5
+
+              echo "Checking Docker readiness..."
               while ! docker ps >/dev/null 2>&1; do sleep 2; done
+              echo "Docker is ready!"
           volumeMounts:
             - name: docker-socket
               mountPath: /var/run/docker_new.sock
