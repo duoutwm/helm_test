@@ -12,69 +12,35 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
-      initContainers:
-        - name: install-docker
-          image: ubuntu:22.04
-          command:
-            - /bin/bash
-            - -c
-            - |
-              set -e
-              echo "Installing required tools..."
-              apt-get update
-              apt-get install -y procps
-
-              echo "Checking and cleaning /var/run/docker_new.sock..."
-              if [ -e /var/run/docker_new.sock ]; then
-                if [ -d /var/run/docker_new.sock ]; then
-                  echo "Removing directory at /var/run/docker_new.sock"
-                  rm -rf /var/run/docker_new.sock
-                else
-                  echo "Removing file at /var/run/docker_new.sock"
-                  rm -f /var/run/docker_new.sock
-                fi
-              fi
-
-              echo "Installing Docker..."
-              apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-              add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-              apt-get update
-              apt-get install -y docker-ce
-
-              echo "Starting Docker daemon..."
-              dockerd --host=unix:///var/run/docker_new.sock &
-              sleep 5
-
-              echo "Checking Docker readiness..."
-              while ! docker ps >/dev/null 2>&1; do sleep 2; done
-              echo "Docker is ready!"
-          volumeMounts:
-            - name: docker-socket
-              mountPath: /var/run/docker_new.sock
-              readOnly: false  # Разрешаем запись на сокет, чтобы Docker работал
-
       containers:
-        - name: {{ .Release.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
-            - /home/dblab/bin/dblab-server
-          volumeMounts:
-            - name: docker-socket
-              mountPath: /var/run/docker_new.sock  # Монтируем новый сокет Docker
-            - name: config-volume
-              mountPath: /home/dblab/configs/server.yml
-              subPath: config.yml
-          ports:
-            - containerPort: {{ .Values.config.server.port }}
-              name: api
-            - containerPort: {{ .Values.config.server.embeddedUI.port }}
-              name: ui
-
-      volumes:
+      - name: docker-dind
+        image: docker:dind
+        securityContext:
+          privileged: true
+        volumeMounts:
         - name: docker-socket
-          emptyDir: {}  # Используем emptyDir для создания сокета внутри контейнера
+          mountPath: /var/run/docker.sock
+        - name: docker-lib
+          mountPath: /var/lib/docker
+      - name: dblab-server
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+        - /home/dblab/bin/dblab-server
+        env:
+        - name: DOCKER_HOST
+          value: unix:///var/run/docker.sock
+        volumeMounts:
+        - name: docker-socket
+          mountPath: /var/run/docker.sock
         - name: config-volume
-          configMap:
-            name: {{ .Release.Name }}-config
+          mountPath: /home/dblab/configs/server.yml
+          subPath: config.yml
+      volumes:
+      - name: docker-socket
+        emptyDir: {}
+      - name: docker-lib
+        emptyDir: {}
+      - name: config-volume
+        configMap:
+          name: {{ .Release.Name }}-config
