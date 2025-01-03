@@ -13,38 +13,45 @@ spec:
         app: {{ .Release.Name }}
     spec:
       initContainers:
-      - name: install-docker
-        image: ubuntu:22.04
-        command:
-        - /bin/bash
-        - -c
-        - |
-          apt-get update && \
-          apt-get install -y docker.io && \
-          dockerd --host=unix:///var/run/docker.sock &
-        volumeMounts:
-        - name: docker-socket
-          mountPath: /var/run/docker.sock
+        - name: install-docker
+          image: ubuntu:22.04
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -e
+              apt-get update
+              apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+              add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+              apt-get update
+              apt-get install -y docker-ce
+              dockerd --host=unix:///var/run/docker.sock &
+              sleep 5
+              while ! docker ps >/dev/null 2>&1; do sleep 2; done
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
       containers:
-      - name: {{ .Release.Name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command:
-        - /home/dblab/bin/dblab-server
-        volumeMounts:
-        - name: docker-socket
-          mountPath: /var/run/docker.sock
-        - name: config-volume
-          mountPath: /home/dblab/configs/server.yml
-          subPath: config.yml
-        ports:
-        - containerPort: {{ .Values.config.server.port }}
-          name: api
-        - containerPort: {{ .Values.config.server.embeddedUI.port }}
-          name: ui
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /home/dblab/bin/dblab-server
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+            - name: config-volume
+              mountPath: /home/dblab/configs/server.yml
+              subPath: config.yml
+          ports:
+            - containerPort: {{ .Values.config.server.port }}
+              name: api
+            - containerPort: {{ .Values.config.server.embeddedUI.port }}
+              name: ui
       volumes:
-      - name: docker-socket
-        emptyDir: {}
-      - name: config-volume
-        configMap:
-          name: {{ .Release.Name }}-config
+        - name: docker-socket
+          emptyDir: {}
+        - name: config-volume
+          configMap:
+            name: {{ .Release.Name }}-config
