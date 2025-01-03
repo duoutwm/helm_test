@@ -20,17 +20,17 @@ spec:
             - -c
             - |
               set -e
-              # Установим lsof для поиска процессов, использующих сокет
+              # Устанавливаем утилиту pkill для завершения процессов
               apt-get update
-              apt-get install -y lsof
-              # Проверяем, если сокет занят
+              apt-get install -y procps
+              # Проверяем, если процесс dockerd уже запущен, и завершим его
+              if pgrep -x "dockerd" > /dev/null; then
+                echo "Stopping running dockerd process"
+                pkill -9 dockerd  # Принудительно завершаем процесс Docker
+              fi
+              # Убедимся, что сокет можно удалить
               if [ -e /var/run/docker.sock ]; then
-                echo "Docker socket exists, trying to kill processes using it"
-                # Извлекаем PIDs процессов, использующих сокет, и завершает их
-                for pid in $(lsof -t /var/run/docker.sock); do
-                  echo "Killing process with PID $pid"
-                  kill -9 $pid || true  # Завершаем процесс
-                done
+                echo "Removing existing docker.sock"
                 rm -rf /var/run/docker.sock  # Удаляем сокет
               fi
               apt-get install -y apt-transport-https ca-certificates curl software-properties-common
@@ -38,7 +38,7 @@ spec:
               add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
               apt-get update
               apt-get install -y docker-ce
-              # Запускаем Docker в фоновом режиме
+              # Запускаем Docker в фоновом режиме с новым сокетом
               dockerd --host=unix:///var/run/docker.sock &
               sleep 5
               while ! docker ps >/dev/null 2>&1; do sleep 2; done
