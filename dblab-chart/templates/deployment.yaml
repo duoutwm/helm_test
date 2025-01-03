@@ -20,31 +20,39 @@ spec:
             - -c
             - |
               set -e
-              # Устанавливаем утилиту pkill для завершения процессов
+              # Устанавливаем procps для kill
               apt-get update
               apt-get install -y procps
-              # Проверяем, если процесс dockerd уже запущен, и завершим его
-              if pgrep -x "dockerd" > /dev/null; then
-                echo "Stopping running dockerd process"
-                pkill -9 dockerd  # Принудительно завершаем процесс Docker
-              fi
+              # Принудительно завершаем все процессы, использующие сокет
+              echo "Checking for running Docker processes"
+              for pid in $(ps aux | grep -E 'dockerd|docker' | grep -v 'grep' | awk '{print $2}'); do
+                echo "Killing process with PID $pid"
+                kill -9 $pid || true  # Принудительно завершаем процесс
+              done
               # Убедимся, что сокет можно удалить
-              if [ -e /var/run/docker.sock ]; then
-                echo "Removing existing docker.sock"
-                rm -rf /var/run/docker.sock  # Удаляем сокет
+              if [ -e /var/run/docker_new.sock ]; then
+                echo "Removing existing docker_new.sock"
+                rm -rf /var/run/docker_new.sock  # Удаляем сокет
               fi
+              # Повторно проверяем сокет через несколько секунд
+              sleep 1
+              if [ -e /var/run/docker_new.sock ]; then
+                echo "Attempting to remove docker_new.sock again"
+                rm -rf /var/run/docker_new.sock  # Пробуем ещё раз удалить сокет
+              fi
+              # Установка Docker
               apt-get install -y apt-transport-https ca-certificates curl software-properties-common
               curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
               add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
               apt-get update
               apt-get install -y docker-ce
-              # Запускаем Docker в фоновом режиме с новым сокетом
-              dockerd --host=unix:///var/run/docker.sock &
+              # Запуск Docker в фоновом режиме с новым сокетом
+              dockerd --host=unix:///var/run/docker_new.sock &
               sleep 5
               while ! docker ps >/dev/null 2>&1; do sleep 2; done
           volumeMounts:
             - name: docker-socket
-              mountPath: /var/run/docker.sock
+              mountPath: /var/run/docker_new.sock
               readOnly: false  # Разрешаем запись на сокет, чтобы Docker работал
 
       containers:
@@ -55,7 +63,7 @@ spec:
             - /home/dblab/bin/dblab-server
           volumeMounts:
             - name: docker-socket
-              mountPath: /var/run/docker.sock  # Монтируем сокет Docker
+              mountPath: /var/run/docker_new.sock  # Монтируем новый сокет Docker
             - name: config-volume
               mountPath: /home/dblab/configs/server.yml
               subPath: config.yml
