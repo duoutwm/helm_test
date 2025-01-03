@@ -51,9 +51,9 @@ spec:
             # Порт, на котором доступно Web-UI и API dbLab
             - name: DBLAB_LISTEN_PORT
               value: "2345"
-          volumeMounts:
-            - name: docker-sock
-              mountPath: /var/run/docker.sock  # Монтируем тот же Docker-сокет
+            # Указываем, что dbLab должен использовать TCP
+            - name: DOCKER_HOST
+              value: "tcp://127.0.0.1:2375"
 
       # Общий том для сокета Docker
       volumes:
