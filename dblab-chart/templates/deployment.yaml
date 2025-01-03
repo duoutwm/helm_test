@@ -20,6 +20,8 @@ spec:
             - -c
             - |
               set -e
+              # Удаляем старую директорию, если она существует
+              rm -rf /var/run/docker.sock
               apt-get update
               apt-get install -y apt-transport-https ca-certificates curl software-properties-common
               curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
@@ -32,6 +34,8 @@ spec:
           volumeMounts:
             - name: docker-socket
               mountPath: /var/run/docker.sock
+              readOnly: false  # Разрешаем запись на сокет, чтобы Docker работал
+
       containers:
         - name: {{ .Release.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -40,7 +44,7 @@ spec:
             - /home/dblab/bin/dblab-server
           volumeMounts:
             - name: docker-socket
-              mountPath: /var/run/docker.sock
+              mountPath: /var/run/docker.sock  # Монтируем сокет Docker
             - name: config-volume
               mountPath: /home/dblab/configs/server.yml
               subPath: config.yml
@@ -49,9 +53,10 @@ spec:
               name: api
             - containerPort: {{ .Values.config.server.embeddedUI.port }}
               name: ui
+
       volumes:
         - name: docker-socket
-          emptyDir: {}
+          emptyDir: {}  # Используем emptyDir для создания сокета внутри контейнера
         - name: config-volume
           configMap:
             name: {{ .Release.Name }}-config
