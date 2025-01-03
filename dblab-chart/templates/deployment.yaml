@@ -16,6 +16,9 @@ spec:
         # --- (1) Контейнер с Docker-in-Docker ---
         - name: dind
           image: "{{ .Values.image }}:{{ .Values.tag }}"
+          env:
+            - name: DOCKER_HOST
+              value: "tcp://127.0.0.1:2375"       
           securityContext:
             privileged: true            # Для DinD нужен привилегированный режим
           command: [ "dockerd" ]        # Запуск Docker Daemon
@@ -26,36 +29,13 @@ spec:
         # --- (2) Контейнер с dbLab ---
         - name: dblab
           image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"
-          env:
-            # Рекомендуется передавать строку подключения через PG_CONNECTION_STRING:
-            - name: PG_CONNECTION_STRING
-              value: "postgresql://{{ .Values.dblab.user }}:{{ .Values.dblab.password }}@{{ .Values.dblab.host }}:{{ .Values.dblab.port }}/{{ .Values.dblab.dbname }}"
-            
+          env: 
             # Пароль для админского Web-UI
             - name: ADMIN_PASSWORD
               value: "{{ .Values.dblab.dbAdminPassword }}"
-
-            # Отключить HTTPS, если нет сертификата (по документации dbLab)
-            - name: DBLAB_NO_SSL
-              value: "1"
-
-            # dbLab по умолчанию слушает 127.0.0.1, если нужно, выставим на 0.0.0.0:
-            - name: DBLAB_LISTEN_HOST
-              value: "0.0.0.0"
-
-            # Порт, на котором доступно Web-UI и API dbLab
-            - name: DBLAB_LISTEN_PORT
-              value: "2345"
             # Указываем, что dbLab должен использовать TCP
             - name: DOCKER_HOST
               value: "tcp://127.0.0.1:2375"
-            # Указываем, диск для dbLab
-            - name: DBLAB_DISK
-              value: "/var/lib/dblab"
-            # Указываем, какой dbLab должен использовать пул
-            - name: DBLAB_POOL
-              value: "dblab_pool_02"
-
           volumeMounts:
             - name: dblab-storage
               mountPath: "/var/lib/dblab"  # Путь внутри контейнера
