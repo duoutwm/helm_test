@@ -20,8 +20,12 @@ spec:
             - -c
             - |
               set -e
-              # Удаляем старую директорию, если она существует
-              rm -rf /var/run/docker.sock
+              # Проверяем, если dockerd использует сокет, и убиваем процесс
+              if [ -e /var/run/docker.sock ]; then
+                echo "Docker socket exists, trying to kill processes using it"
+                fuser -k /var/run/docker.sock || true  # Завершаем процесс, использующий сокет
+                rm -rf /var/run/docker.sock  # Удаляем сокет
+              fi
               apt-get update
               apt-get install -y apt-transport-https ca-certificates curl software-properties-common
               curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
