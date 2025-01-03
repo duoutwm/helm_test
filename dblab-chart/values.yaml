@@ -1,27 +1,3 @@
-image:
-  repository: postgresai/dblab-server
-  tag: "3.3-latest"
-  pullPolicy: IfNotPresent
-
-config:
-  server:
-    host: 0.0.0.0
-    port: 2345
-    embeddedUI:
-      enabled: true
-      dockerImage: "postgresai/dblab-ui:latest"
-      host: 0.0.0.0
-      port: 8080
-    ssl:
-      enabled: false
-  engine:
-    db:
-      host: dblabwebtest.exist.ua
-      port: 30032
-      user: postgres
-      password: strs5348
-      dbname: postgres
-
-ports:
-  api: 2345
-  ui: 8080
+image: docker:dind
+tag: "latest"
+replicas: 1

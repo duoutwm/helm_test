@@ -1,46 +1,25 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1                 # Используем API-версию для Deployment
+kind: Deployment                    # Говорим, что это Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: "{{ .Release.Name }}-deployment"  # Название деплоймента берём из имени релиза
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}        # Количество подов, читаем из values.yaml
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: "{{ .Release.Name }}-dind"     # По этой метке определяем, какие поды управляет
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        app: "{{ .Release.Name }}-dind"   # Метка, которая должна совпадать с selector выше
     spec:
       containers:
-      - name: docker-dind
-        image: docker:dind
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: docker-socket
-          mountPath: /var/run/docker.sock
-        - name: docker-lib
-          mountPath: /var/lib/docker
-      - name: dblab-server
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command:
-        - /home/dblab/bin/dblab-server
-        env:
-        - name: DOCKER_HOST
-          value: unix:///var/run/docker.sock
-        volumeMounts:
-        - name: docker-socket
-          mountPath: /var/run/docker.sock
-        - name: config-volume
-          mountPath: /home/dblab/configs/server.yml
-          subPath: config.yml
-      volumes:
-      - name: docker-socket
-        emptyDir: {}
-      - name: docker-lib
-        emptyDir: {}
-      - name: config-volume
-        configMap:
-          name: {{ .Release.Name }}-config
+        - name: dind                           # Имя контейнера
+          image: "{{ .Values.image }}:{{ .Values.tag }}" # Образ берём из values.yaml
+          securityContext:
+            privileged: true                  # Необходимо для DinD
+          command: [ "dockerd" ]             # Запуск Docker Daemon
+          args:
+            - "--host=unix:///var/run/docker.sock" # Локальный Unix-сокет
+            - "--host=tcp://0.0.0.0:2375"          # TCP-сокет, если нужен внешний доступ
+          ports:
+            - containerPort: 2375             # Порт, на котором слушает Docker Daemon
