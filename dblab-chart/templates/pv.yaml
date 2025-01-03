@@ -8,7 +8,9 @@ spec:
   capacity:
     storage: {{ .Values.persistence.size }}  # Размер хранилища из values.yaml
   accessModes:
-  - ReadWriteOnce  # Разрешение на запись одному поду
+    {{- range .Values.persistence.accessModes }}
+      - {{ . }}
+    {{- end }}
   persistentVolumeReclaimPolicy: Retain  # PV сохраняется после удаления PVC
   hostPath:
     path: {{ .Values.persistence.path }}  # Путь на хосте из values.yaml
