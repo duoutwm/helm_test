@@ -6,15 +6,27 @@ replicas: 1                   # Количество подов (реплик)
 # --- Параметры для dbLab ---
 dblab:
   image: "postgresai/dblab-server"     # Официальный репозиторий dbLab
-  tag: "3.5.0"                        # Актуальная стабильная версия (по данным Docker Hub)
+  tag: "3.5.0"                         # Актуальная стабильная версия
   dbAdminPassword: "supersecret"       # Пароль для веб-UI админа (ADMIN_PASSWORD)
-  
+
   # Параметры подключения к PostgreSQL:
   host: "dblabwebtest.exist.ua"
   port: 30032
   user: "postgres"
   password: "strs5348"
   dbname: "postgres"
+  connectionString: "postgresql://postgres:strs5348@dblabwebtest.exist.ua:30032/postgres" # Полная строка подключения
+
+  # Параметры ZFS:
+  disk: "/var/lib/dblab"  # Путь к диску ZFS
+  pool: "dblab_pool_02"   # Имя ZFS-пула
+
+  # Параметры сервера:
+  listen: "0.0.0.0"       # Слушать все интерфейсы
+  webPort: 2345           # Порт Web UI и API dbLab
+
+  # Логирование:
+  logLevel: "info"        # Уровень логирования (info, debug, error)
   # По документации dbLab рекомендует передавать это одной строкой в PG_CONNECTION_STRING.
 persistence:
   enabled: true          # Включение постоянного хранилища

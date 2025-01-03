@@ -59,7 +59,13 @@ spec:
           volumeMounts:
             - name: dblab-storage
               mountPath: "/var/lib/dblab"  # Путь внутри контейнера
+            - name: config-volume
+              mountPath: /home/dblab/configs/server.yml
+              subPath: server.yml
       volumes:
         - name: dblab-storage
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-pvc  # Имя PVC
+        - name: config-volume
+          configMap:
+            name: {{ .Release.Name }}-config
