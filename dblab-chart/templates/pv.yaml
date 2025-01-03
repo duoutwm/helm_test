@@ -7,7 +7,8 @@ metadata:
 spec:
   capacity:
     storage: {{ .Values.persistence.size }}  # Размер хранилища из values.yaml
-  accessModes: ["{{ .Values.persistence.accessModes }}"]
+  accessModes:
+    - "{{ .Values.persistence.accessModes }}"
   persistentVolumeReclaimPolicy: Retain  # PV сохраняется после удаления PVC
   hostPath:
     path: {{ .Values.persistence.path }}  # Путь на хосте из values.yaml
