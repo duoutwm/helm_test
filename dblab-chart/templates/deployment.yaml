@@ -59,7 +59,7 @@ spec:
           volumeMounts:
             - name: dblab-storage
               mountPath: "/var/lib/dblab"  # Путь внутри контейнера
-    volumes:
-      - name: dblab-storage
-        persistentVolumeClaim:
-         claimName: {{ .Release.Name }}-pvc  # Имя PVC
+      volumes:
+        - name: dblab-storage
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc  # Имя PVC
