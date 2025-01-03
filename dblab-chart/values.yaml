@@ -6,7 +6,7 @@ replicas: 1                   # Количество подов (реплик)
 # --- Параметры для dbLab ---
 dblab:
   image: "postgresai/dblab-server"     # Официальный репозиторий dbLab
-  tag: "1.14.1"                        # Актуальная стабильная версия (по данным Docker Hub)
+  tag: "3.5.0"                        # Актуальная стабильная версия (по данным Docker Hub)
   dbAdminPassword: "supersecret"       # Пароль для веб-UI админа (ADMIN_PASSWORD)
   
   # Параметры подключения к PostgreSQL:
