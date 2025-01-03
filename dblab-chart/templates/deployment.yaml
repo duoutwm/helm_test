@@ -23,10 +23,6 @@ spec:
             - "--host=tcp://0.0.0.0:2375"           # (Необязательный) TCP-порт
           ports:
             - containerPort: 2375       # Порт, на котором слушает Docker Daemon (TCP)
-          volumeMounts:
-            - name: docker-sock
-              mountPath: /var/run/docker.sock  # Общий сокет для Docker
-
         # --- (2) Контейнер с dbLab ---
         - name: dblab
           image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"
