@@ -49,3 +49,17 @@ spec:
             # Указываем, что dbLab должен использовать TCP
             - name: DOCKER_HOST
               value: "tcp://127.0.0.1:2375"
+            # Указываем, диск для dbLab
+            - name: DBLAB_DISK
+              value: "/var/lib/dblab"
+            # Указываем, какой dbLab должен использовать пул
+            - name: DBLAB_POOL
+              value: "dblab_pool_02"
+
+          volumeMounts:
+            - name: dblab-storage
+              mountPath: "/var/lib/dblab"  # Путь внутри контейнера
+    volumes:
+      - name: dblab-storage
+        persistentVolumeClaim:
+         claimName: {{ .Release.Name }}-pvc  # Имя PVC
