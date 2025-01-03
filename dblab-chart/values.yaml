@@ -16,3 +16,10 @@ dblab:
   password: "strs5348"
   dbname: "postgres"
   # По документации dbLab рекомендует передавать это одной строкой в PG_CONNECTION_STRING.
+persistence:
+  enabled: true          # Включение постоянного хранилища
+  storageClass: ""       # Используется класс хранилища по умолчанию
+  accessModes:
+    - ReadWriteOnce      # Режим доступа: только один под может монтировать хранилище для записи
+  size: 1024Gi             # Размер хранилища: 1 ГБ
+  path: "/var/lib/dblab/dblab_pool_02" # Путь для хранения данных PostgreSQL
