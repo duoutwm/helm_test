@@ -57,7 +57,7 @@ spec:
             # Пароль для админского Web-UI
             - name: ADMIN_PASSWORD
               value: "{{ .Values.dblab.dbAdminPassword }}"
-            # Указываем, что dbLab должен использовать TCP
+            # Указываем, что dbLab должен использовать сокет
             - name: DOCKER_HOST
               value: "unix:///var/run/docker.sock"
           livenessProbe:
@@ -71,7 +71,7 @@ spec:
             - name: dblab-storage
               mountPath: "/var/lib/dblab"  # Путь внутри контейнера
             - name: config-volume
-              mountPath: /home/dblab/configs/server.yml
+              mountPath: /home/dblab/engine/configs/server.yml
               subPath: server.yml
             - name: docker-socket
               mountPath: /var/run/
