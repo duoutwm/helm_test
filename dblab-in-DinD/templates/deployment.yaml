@@ -1,0 +1,92 @@
+apiVersion: apps/v1                      # API-версия для Deployment
+kind: Deployment                         # Объект - Deployment
+metadata:
+  name: "{{ .Release.Name }}-deployment" # Название (зависит от имени релиза)
+spec:
+  replicas: {{ .Values.replicas }}       # Количество подов (реплик)
+  selector:
+    matchLabels:
+      app: "{{ .Release.Name }}-dind"    # Метка, по которой Deployment выбирает поды
+  template:
+    metadata:
+      labels:
+        app: "{{ .Release.Name }}-dind"  # Должна совпадать с selector
+    spec:
+      containers:
+        # --- (3) Контейнер для проверки связи ---
+        #- name: check-dind
+        #  image: curlimages/curl:latest  # Небольшой контейнер с curl
+        #  command: ["sh", "-c"]
+        #  args:
+        #    - |
+        #      while true; do 
+        #        curl -sS http://127.0.0.1:2375/_ping && echo "DinD доступен!" || echo "Ошибка: DinD недоступен!";
+        #        sleep 5;
+        #      done
+        # --- (1) Контейнер с Docker-in-Docker ---
+        - name: dind
+          image: "{{ .Values.image }}:{{ .Values.tag }}"
+          env:
+            - name: DOCKER_HOST
+              value: "tcp://127.0.0.1:2375"  
+
+          readinessProbe:
+            # Проверка доступности DinD через HTTP-запрос
+            httpGet:
+              path: /_ping         # Путь для проверки (стандартный для Docker API)
+              port: 2375           # Порт, на котором слушает DinD
+            initialDelaySeconds: 5  # Задержка перед первой проверкой (чтобы дать DinD время стартовать)
+            periodSeconds: 2        # Интервал между проверками
+     
+          securityContext:
+            privileged: true            # Для DinD нужен привилегированный режим
+          command: [ "dockerd" ]        # Запуск Docker Daemon
+          args:
+            - "--host=tcp://0.0.0.0:2375"           # (Необязательный) TCP-порт
+            - "--host=unix:///var/run/docker.sock"
+          ports:
+            - containerPort: 2375       # Порт, на котором слушает Docker Daemon (TCP)
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run/
+
+        # --- (2) Контейнер с dbLab ---
+        - name: dblab
+          image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"
+          command: ["sh", "-c"]
+          args: ["sleep 3600"]          
+          env: 
+            # статическое указание хоста дблаба.    
+            - name: HOSTNAME
+              value: "dblab-static-hostname"
+            # Пароль для админского Web-UI
+            - name: ADMIN_PASSWORD
+              value: "{{ .Values.dblab.dbAdminPassword }}"
+            # Указываем, что dbLab должен использовать сокет
+            - name: DOCKER_HOST
+              value: "unix:///var/run/docker.sock"
+          livenessProbe:
+            # Проверка доступности DinD для работы dbLab
+            httpGet:
+              path: /_ping         # Путь для проверки
+              port: 2375           # Порт DinD
+            initialDelaySeconds: 5  # Задержка перед началом проверок
+            periodSeconds: 2        # Интервал между проверками
+          volumeMounts:
+            - name: dblab-storage
+              mountPath: "/var/lib/dblab"  # Путь внутри контейнера
+            - name: config-volume
+              mountPath: /home/dblab/configs/server.yml
+              subPath: server.yml
+            - name: docker-socket
+              mountPath: /var/run/
+
+      volumes:
+        - name: dblab-storage
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc  # Имя PVC
+        - name: config-volume
+          configMap:
+            name: {{ .Release.Name }}-config
+        - name: docker-socket
+          emptyDir: {}
