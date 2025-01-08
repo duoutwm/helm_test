@@ -56,6 +56,9 @@ spec:
           command: ["sh", "-c"]
           args: ["sleep 3600"]          
           env: 
+            # статическое указание хоста дблаба.    
+            - name: HOSTNAME
+              value: "dblab-static-hostname"
             # Пароль для админского Web-UI
             - name: ADMIN_PASSWORD
               value: "{{ .Values.dblab.dbAdminPassword }}"

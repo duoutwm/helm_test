@@ -26,7 +26,6 @@ provision:
     to: 6099
 
 databaseContainer:
-  containerName: "dblab"
   dockerImage: "postgres:15"  # Образ PostgreSQL для клонирования
   containerConfig:
     "shm-size": 1gb           # Настройка shared memory
