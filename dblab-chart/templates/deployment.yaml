@@ -34,8 +34,13 @@ spec:
           command: [ "dockerd" ]        # Запуск Docker Daemon
           args:
             - "--host=tcp://0.0.0.0:2375"           # (Необязательный) TCP-порт
+            - "--host=unix:///var/run/docker.sock"
           ports:
             - containerPort: 2375       # Порт, на котором слушает Docker Daemon (TCP)
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+
         # --- (2) Контейнер с dbLab ---
         - name: dblab
           image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"
@@ -59,3 +64,7 @@ spec:
         - name: config-volume
           configMap:
             name: {{ .Release.Name }}-config
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket            
