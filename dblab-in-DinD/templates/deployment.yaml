@@ -22,8 +22,12 @@ spec:
               value: "tcp://127.0.0.1:2375"         # Переменная окружения, указывающая, что Docker доступен по TCP
             - name: HOSTNAME
               value: "dblab-static-hostname"        # Статический хостнейм для dbLab
-            - name: ADMIN_PASSWORD
-              value: "{{ .Values.dblab.dbAdminPassword }}"  # Пароль для админского Web-UI dbLab
+            - name: ADMI_PASSWORD
+              value: "{{ .Values.dblab.dbAdminPassword }}"
+            - name: DBLAB_IMAGE
+              value: "{{ .Values.dblab.image }}"
+            - name: DBLAB_TAG
+              value: "{{ .Values.dblab.tag }}"              
           volumeMounts:
             - name: dblab-storage
               mountPath: "/var/lib/dblab"           # Хранилище dbLab внутри контейнера dind
@@ -35,30 +39,21 @@ spec:
           command: [ "sh", "-c" ]                   # Запуск контейнера через шелл, чтобы выполнить несколько команд
           args:
             - |
-              # 1) Запускаем Docker Daemon в фоне
               dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock &
               echo "Ожидание готовности Docker Daemon..."
-              
-              # 2) Проверяем готовность DinD
               until wget -qO- http://127.0.0.1:2375/_ping > /dev/null; do
                   echo "DinD ещё не готов, повторяем проверку..."
                   sleep 2
               done
-
-              echo "Docker Daemon готов, запускаем dbLab..."
-
-              # 3) Запускаем dbLab внутри DinD
+              echo "Docker Daemon готов! Запускаем dbLab..."
               docker run -d --name dblab \
                 -e HOSTNAME=${HOSTNAME} \
                 -e ADMIN_PASSWORD=${ADMIN_PASSWORD} \
-                -e DOCKER_HOST=unix:///var/run/docker.sock \
                 -v /var/lib/dblab:/var/lib/dblab \
                 -v /home/dblab/configs/server.yml:/home/dblab/configs/server.yml \
                 -v /var/run:/var/run \
-                "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}" \
+                ${DBLAB_IMAGE}:${DBLAB_TAG} \
                 -c /home/dblab/configs/server.yml
-
-              # 4) Держим процесс активным, чтобы контейнер не завершался
               tail -f /dev/null
       volumes:
         - name: dblab-storage
