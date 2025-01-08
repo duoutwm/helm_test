@@ -19,7 +19,7 @@ ssl:
   enabled: false
 
 provision:
-  useSudo: true
+  useSudo: false
 
   portPool:
     from: 6000
