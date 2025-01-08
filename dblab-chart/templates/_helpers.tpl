@@ -21,6 +21,14 @@ ssl:
 provision:
   useSudo: true
 
+  portPool:
+    from: 6000
+    to: 6099
+
+databaseContainer:
+  containerName: "dblab"
+
+
 logs:
   level: {{ .Values.dblab.logLevel }}
 {{- end }}
