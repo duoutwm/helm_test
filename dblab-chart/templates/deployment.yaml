@@ -71,7 +71,7 @@ spec:
             - name: dblab-storage
               mountPath: "/var/lib/dblab"  # Путь внутри контейнера
             - name: config-volume
-              mountPath: /home/dblab/engine/configs/server.yml
+              mountPath: /home/dblab/configs/server.yml
               subPath: server.yml
             - name: docker-socket
               mountPath: /var/run/
