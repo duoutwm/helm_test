@@ -30,7 +30,10 @@ databaseContainer:
   dockerImage: "postgres:15"  # Образ PostgreSQL для клонирования
   containerConfig:
     "shm-size": 1gb           # Настройка shared memory
-
+  environment:
+    POSTGRES_PASSWORD: "strs5348"
+    POSTGRES_USER: "postgres"
+    POSTGRES_DB: "postgres"
 
 logs:
   level: {{ .Values.dblab.logLevel }}
