@@ -39,8 +39,6 @@ spec:
         # --- (2) Контейнер с dbLab ---
         - name: dblab
           image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"
-          command: ["sleep"]
-          args: ["3600"]
           env: 
             # Пароль для админского Web-UI
             - name: ADMIN_PASSWORD

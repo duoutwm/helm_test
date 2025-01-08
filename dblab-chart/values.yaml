@@ -26,7 +26,8 @@ dblab:
   webPort: 2345           # Порт Web UI и API dbLab
 
   # Логирование:
-  logLevel: "info"        # Уровень логирования (info, debug, error)
+  logLevel: "debug"        # Уровень логирования (info, debug, error)
+
   # По документации dbLab рекомендует передавать это одной строкой в PG_CONNECTION_STRING.
 persistence:
   enabled: true          # Включение постоянного хранилища
