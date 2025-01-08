@@ -40,10 +40,10 @@ spec:
           args:
             - |
               dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock &
-              echo "Ожидание готовности Docker Daemon..."
-              until wget -qO- http://127.0.0.1:2375/_ping > /dev/null; do
-                  echo "DinD ещё не готов, повторяем проверку..."
-                  sleep 2
+              echo "Ожидание запуска Docker Daemon..."
+              until nc -zv 127.0.0.1 2375; do
+                echo "Docker Daemon ещё не готов, повторяем проверку..."
+                sleep 2
               done
               echo "Docker Daemon готов! Запускаем dbLab..."
               docker run --name dblab-server \
