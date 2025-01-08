@@ -21,3 +21,5 @@ ssl:
 logs:
   level: {{ .Values.dblab.logLevel }}
 {{- end }}
+provision:
+  useSudo: true
