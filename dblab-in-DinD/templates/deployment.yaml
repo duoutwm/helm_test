@@ -40,9 +40,9 @@ spec:
               echo "Ожидание готовности Docker Daemon..."
               
               # 2) Проверяем готовность DinD
-              until curl -s http://127.0.0.1:2375/_ping > /dev/null; do
-                echo "DinD ещё не готов, повторяем проверку..."
-                sleep 2
+              until wget -qO- http://127.0.0.1:2375/_ping > /dev/null; do
+                  echo "DinD ещё не готов, повторяем проверку..."
+                  sleep 2
               done
 
               echo "Docker Daemon готов, запускаем dbLab..."
