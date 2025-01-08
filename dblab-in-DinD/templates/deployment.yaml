@@ -37,10 +37,17 @@ spec:
             - |
               # 1) Запускаем Docker Daemon в фоне
               dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock &
-              sleep 5                               # Даем время Docker запуститься
+              echo "Ожидание готовности Docker Daemon..."
+              
+              # 2) Проверяем готовность DinD
+              until curl -s http://127.0.0.1:2375/_ping > /dev/null; do
+                echo "DinD ещё не готов, повторяем проверку..."
+                sleep 2
+              done
 
-              # 2) Запускаем dbLab внутри DinD
-              echo "Запускаем dbLab..."
+              echo "Docker Daemon готов, запускаем dbLab..."
+
+              # 3) Запускаем dbLab внутри DinD
               docker run -d --name dblab \
                 -e HOSTNAME=${HOSTNAME} \
                 -e ADMIN_PASSWORD=${ADMIN_PASSWORD} \
@@ -51,7 +58,7 @@ spec:
                 "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}" \
                 -c /home/dblab/configs/server.yml
 
-              # 3) Оставляем процесс активным, чтобы контейнер не завершался
+              # 4) Держим процесс активным, чтобы контейнер не завершался
               tail -f /dev/null
       volumes:
         - name: dblab-storage
