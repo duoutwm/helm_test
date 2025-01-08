@@ -13,6 +13,15 @@ spec:
         app: "{{ .Release.Name }}-dind"  # Должна совпадать с selector
     spec:
       containers:
+        # --- (3) Контейнер для проверки связи ---
+        - name: check-dind
+          image: curlimages/curl:latest  # Небольшой контейнер с curl
+          command: ["sh", "-c"]
+          args:
+            - while true; do 
+                curl -sS http://127.0.0.1:2375/_ping && echo "DinD доступен!" || echo "Ошибка: DinD недоступен!";
+                sleep 5;
+              done
         # --- (1) Контейнер с Docker-in-Docker ---
         - name: dind
           image: "{{ .Values.image }}:{{ .Values.tag }}"
