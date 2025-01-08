@@ -18,7 +18,8 @@ spec:
           image: curlimages/curl:latest  # Небольшой контейнер с curl
           command: ["sh", "-c"]
           args:
-            - while true; do 
+            - |
+              while true; do 
                 curl -sS http://127.0.0.1:2375/_ping && echo "DinD доступен!" || echo "Ошибка: DinD недоступен!";
                 sleep 5;
               done
