@@ -12,16 +12,6 @@ spec:
       labels:
         app: "{{ .Release.Name }}-dind"  # Должна совпадать с selector
     spec:
-      initContainers:
-        - name: create-socket
-          image: busybox
-          command: ["sh", "-c"]
-          args:
-            - touch /var/run/docker.sock && chmod 777 /var/run/docker.sock
-          volumeMounts:
-            - name: docker-socket
-              mountPath: /var/run/docker.sock
-
       containers:
         # --- (3) Контейнер для проверки связи ---
         #- name: check-dind
@@ -58,7 +48,7 @@ spec:
             - containerPort: 2375       # Порт, на котором слушает Docker Daemon (TCP)
           volumeMounts:
             - name: docker-socket
-              mountPath: /var/run/docker.sock
+              mountPath: /var/run/
 
         # --- (2) Контейнер с dbLab ---
         - name: dblab
@@ -69,7 +59,7 @@ spec:
               value: "{{ .Values.dblab.dbAdminPassword }}"
             # Указываем, что dbLab должен использовать TCP
             - name: DOCKER_HOST
-              value: "tcp://127.0.0.1:2375"
+              value: "unix:///var/run/docker.sock"
           livenessProbe:
             # Проверка доступности DinD для работы dbLab
             httpGet:
@@ -84,7 +74,7 @@ spec:
               mountPath: /home/dblab/configs/server.yml
               subPath: server.yml
             - name: docker-socket
-              mountPath: /var/run/docker.sock
+              mountPath: /var/run/
 
       volumes:
         - name: dblab-storage
