@@ -12,6 +12,16 @@ spec:
       labels:
         app: "{{ .Release.Name }}-dind"  # Должна совпадать с selector
     spec:
+      initContainers:
+        - name: create-socket
+          image: busybox
+          command: ["sh", "-c"]
+          args:
+            - touch /var/run/docker.sock && chmod 777 /var/run/docker.sock
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+
       containers:
         # --- (3) Контейнер для проверки связи ---
         #- name: check-dind
@@ -28,7 +38,16 @@ spec:
           image: "{{ .Values.image }}:{{ .Values.tag }}"
           env:
             - name: DOCKER_HOST
-              value: "tcp://127.0.0.1:2375"       
+              value: "tcp://127.0.0.1:2375"  
+
+          readinessProbe:
+            # Проверка доступности DinD через HTTP-запрос
+            httpGet:
+              path: /_ping         # Путь для проверки (стандартный для Docker API)
+              port: 2375           # Порт, на котором слушает DinD
+            initialDelaySeconds: 5  # Задержка перед первой проверкой (чтобы дать DinD время стартовать)
+            periodSeconds: 2        # Интервал между проверками
+     
           securityContext:
             privileged: true            # Для DinD нужен привилегированный режим
           command: [ "dockerd" ]        # Запуск Docker Daemon
@@ -51,12 +70,22 @@ spec:
             # Указываем, что dbLab должен использовать TCP
             - name: DOCKER_HOST
               value: "tcp://127.0.0.1:2375"
+          livenessProbe:
+            # Проверка доступности DinD для работы dbLab
+            httpGet:
+              path: /_ping         # Путь для проверки
+              port: 2375           # Порт DinD
+            initialDelaySeconds: 5  # Задержка перед началом проверок
+            periodSeconds: 2        # Интервал между проверками
           volumeMounts:
             - name: dblab-storage
               mountPath: "/var/lib/dblab"  # Путь внутри контейнера
             - name: config-volume
               mountPath: /home/dblab/configs/server.yml
               subPath: server.yml
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+
       volumes:
         - name: dblab-storage
           persistentVolumeClaim:
@@ -65,6 +94,4 @@ spec:
           configMap:
             name: {{ .Release.Name }}-config
         - name: docker-socket
-          hostPath:
-            path: /var/run/docker.sock
-            type: Socket            
+          emptyDir: {}
