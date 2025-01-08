@@ -35,5 +35,5 @@ persistence:
   accessModes:
     - "ReadWriteOnce"      # Режим доступа: только один под может монтировать хранилище для записи
   size: 1024Gi             # Размер хранилища: 1024 ГБ
-  path: "/var/lib/dblab/dblab_pool_02" # Путь для хранения данных PostgreSQL
+  path: "/var/lib/dblab" # Путь для хранения данных PostgreSQL
 

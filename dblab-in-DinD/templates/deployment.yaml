@@ -46,15 +46,10 @@ spec:
                   sleep 2
               done
               echo "Docker Daemon готов! Запускаем dbLab..."
-              docker run -d --name dblab \
-                -e HOSTNAME=${HOSTNAME} \
-                -e ADMIN_PASSWORD=${ADMIN_PASSWORD} \
-                -v /var/lib/dblab:/var/lib/dblab \
+              docker run --name dblab-server \
+                -v /var/run/docker.sock:/var/run/docker.sock \
                 -v /home/dblab/configs/server.yml:/home/dblab/configs/server.yml \
-                -v /var/run:/var/run \
                 ${DBLAB_IMAGE}:${DBLAB_TAG} \
-                -c /home/dblab/configs/server.yml
-              tail -f /dev/null
       volumes:
         - name: dblab-storage
           persistentVolumeClaim:
