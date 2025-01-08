@@ -36,3 +36,16 @@ persistence:
     - "ReadWriteOnce"      # Режим доступа: только один под может монтировать хранилище для записи
   size: 1024Gi             # Размер хранилища: 1024 ГБ
   path: "/var/lib/dblab/dblab_pool_02" # Путь для хранения данных PostgreSQL
+dblab:
+  initScript: |
+    #!/bin/sh
+    echo "Запуск dbLab внутри DinD..."
+    docker run -d \
+      --name dblab \
+      -p 2345:2345 \
+      -v /var/lib/dblab:/var/lib/dblab \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      -v /home/dblab/configs/server.yml:/home/dblab/configs/server.yml \
+      postgresai/dblab-server:3.5.0 \
+      -c /home/dblab/configs/server.yml
+    echo "dbLab запущен!"

@@ -1,92 +1,64 @@
-apiVersion: apps/v1                      # API-версия для Deployment
-kind: Deployment                         # Объект - Deployment
+apiVersion: apps/v1                                 # Используемая версия API для описания Deployment
+kind: Deployment                                    # Тип объекта - Deployment
 metadata:
-  name: "{{ .Release.Name }}-deployment" # Название (зависит от имени релиза)
+  name: "{{ .Release.Name }}-deployment"            # Название Deployment (зависит от имени релиза)
 spec:
-  replicas: {{ .Values.replicas }}       # Количество подов (реплик)
+  replicas: {{ .Values.replicas }}                  # Количество реплик (подов)
   selector:
     matchLabels:
-      app: "{{ .Release.Name }}-dind"    # Метка, по которой Deployment выбирает поды
+      app: "{{ .Release.Name }}-dind"               # Метка, по которой данный Deployment будет выбирать поды
   template:
     metadata:
       labels:
-        app: "{{ .Release.Name }}-dind"  # Должна совпадать с selector
+        app: "{{ .Release.Name }}-dind"             # Метка, совпадающая с selector выше
     spec:
       containers:
-        # --- (3) Контейнер для проверки связи ---
-        #- name: check-dind
-        #  image: curlimages/curl:latest  # Небольшой контейнер с curl
-        #  command: ["sh", "-c"]
-        #  args:
-        #    - |
-        #      while true; do 
-        #        curl -sS http://127.0.0.1:2375/_ping && echo "DinD доступен!" || echo "Ошибка: DinD недоступен!";
-        #        sleep 5;
-        #      done
-        # --- (1) Контейнер с Docker-in-Docker ---
-        - name: dind
-          image: "{{ .Values.image }}:{{ .Values.tag }}"
+        - name: dind                                # Имя контейнера, в котором будем поднимать Docker in Docker
+          image: "{{ .Values.image }}:{{ .Values.tag }}"  # Образ и тег контейнера dind
+          securityContext:
+            privileged: true                        # Для Docker in Docker необходим привилегированный режим
           env:
             - name: DOCKER_HOST
-              value: "tcp://127.0.0.1:2375"  
-
-          readinessProbe:
-            # Проверка доступности DinD через HTTP-запрос
-            httpGet:
-              path: /_ping         # Путь для проверки (стандартный для Docker API)
-              port: 2375           # Порт, на котором слушает DinD
-            initialDelaySeconds: 5  # Задержка перед первой проверкой (чтобы дать DinD время стартовать)
-            periodSeconds: 2        # Интервал между проверками
-     
-          securityContext:
-            privileged: true            # Для DinD нужен привилегированный режим
-          command: [ "dockerd" ]        # Запуск Docker Daemon
-          args:
-            - "--host=tcp://0.0.0.0:2375"           # (Необязательный) TCP-порт
-            - "--host=unix:///var/run/docker.sock"
-          ports:
-            - containerPort: 2375       # Порт, на котором слушает Docker Daemon (TCP)
-          volumeMounts:
-            - name: docker-socket
-              mountPath: /var/run/
-
-        # --- (2) Контейнер с dbLab ---
-        - name: dblab
-          image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"
-          command: ["sh", "-c"]
-          args: ["sleep 3600"]          
-          env: 
-            # статическое указание хоста дблаба.    
+              value: "tcp://127.0.0.1:2375"         # Переменная окружения, указывающая, что Docker доступен по TCP
             - name: HOSTNAME
-              value: "dblab-static-hostname"
-            # Пароль для админского Web-UI
+              value: "dblab-static-hostname"        # Статический хостнейм для dbLab
             - name: ADMIN_PASSWORD
-              value: "{{ .Values.dblab.dbAdminPassword }}"
-            # Указываем, что dbLab должен использовать сокет
-            - name: DOCKER_HOST
-              value: "unix:///var/run/docker.sock"
-          livenessProbe:
-            # Проверка доступности DinD для работы dbLab
-            httpGet:
-              path: /_ping         # Путь для проверки
-              port: 2375           # Порт DinD
-            initialDelaySeconds: 5  # Задержка перед началом проверок
-            periodSeconds: 2        # Интервал между проверками
+              value: "{{ .Values.dblab.dbAdminPassword }}"  # Пароль для админского Web-UI dbLab
           volumeMounts:
             - name: dblab-storage
-              mountPath: "/var/lib/dblab"  # Путь внутри контейнера
+              mountPath: "/var/lib/dblab"           # Хранилище dbLab внутри контейнера dind
             - name: config-volume
-              mountPath: /home/dblab/configs/server.yml
-              subPath: server.yml
+              mountPath: "/home/dblab/configs/server.yml"  # Файл с конфигурацией dbLab
+              subPath: "server.yml"                 # Указываем, что берем именно файл server.yml из ConfigMap
             - name: docker-socket
-              mountPath: /var/run/
+              mountPath: "/var/run/"                # Маунтим временный каталог для сокета Docker (DinD + dbLab)
+          command: [ "sh", "-c" ]                   # Запуск контейнера через шелл, чтобы выполнить несколько команд
+          args:
+            - |
+              # 1) Запускаем Docker Daemon в фоне
+              dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock &
+              sleep 5                               # Даем время Docker запуститься
 
+              # 2) Запускаем dbLab внутри DinD
+              echo "Запускаем dbLab..."
+              docker run -d --name dblab \
+                -e HOSTNAME=${HOSTNAME} \
+                -e ADMIN_PASSWORD=${ADMIN_PASSWORD} \
+                -e DOCKER_HOST=unix:///var/run/docker.sock \
+                -v /var/lib/dblab:/var/lib/dblab \
+                -v /home/dblab/configs/server.yml:/home/dblab/configs/server.yml \
+                -v /var/run:/var/run \
+                "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}" \
+                -c /home/dblab/configs/server.yml
+
+              # 3) Оставляем процесс активным, чтобы контейнер не завершался
+              tail -f /dev/null
       volumes:
         - name: dblab-storage
           persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-pvc  # Имя PVC
+            claimName: {{ .Release.Name }}-pvc      # Имя PVC для хранения данных dbLab
         - name: config-volume
           configMap:
-            name: {{ .Release.Name }}-config
+            name: {{ .Release.Name }}-config        # ConfigMap с файлом server.yml
         - name: docker-socket
-          emptyDir: {}
+          emptyDir: {}                              # Пустой том, который будем использовать как Docker socket dir
