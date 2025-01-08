@@ -18,8 +18,9 @@ database:
 ssl:
   enabled: false
 
+provision:
+  useSudo: true
+
 logs:
   level: {{ .Values.dblab.logLevel }}
 {{- end }}
-provision:
-  useSudo: true
