@@ -1,4 +1,4 @@
 apiVersion: v2                         # Версия API для Helm 3
 name: dblabAndDinD                       # Имя чарта
 description: Helm chart for DinD + dbLab (v1.14.1)
-version: 0.1.2                         # Версия самого чарта
+version: 0.1.3                         # Версия самого чарта

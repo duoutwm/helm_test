@@ -17,6 +17,8 @@ spec:
       containers:
         - name: dblab
           image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"  # Указываем образ из values.yaml
+          securityContext:
+            privileged: true            # Для DinD нужен привилегированный режим
           command: ["sh", "-c"]
           args: ["sleep 3600"]  # Контейнер остаётся активным
           env: 
