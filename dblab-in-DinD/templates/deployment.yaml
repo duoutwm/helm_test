@@ -36,20 +36,10 @@ spec:
               subPath: "server.yml"                 # Указываем, что берем именно файл server.yml из ConfigMap
             - name: docker-socket
               mountPath: "/var/run/"                # Маунтим временный каталог для сокета Docker (DinD + dbLab)
-          command: [ "sh", "-c" ]                   # Запуск контейнера через шелл, чтобы выполнить несколько команд
+          command: [ "dockerd" ]
           args:
-            - |
-              dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock &
-              echo "Ожидание запуска Docker Daemon..."
-              until nc -zv 127.0.0.1 2375; do
-                echo "Docker Daemon ещё не готов, повторяем проверку..."
-                sleep 2
-              done
-              echo "Docker Daemon готов! Запускаем dbLab..."
-              docker run --name dblab-server \
-                -v /var/run/docker.sock:/var/run/docker.sock \
-                -v /home/dblab/configs/server.yml:/home/dblab/configs/server.yml \
-                ${DBLAB_IMAGE}:${DBLAB_TAG} \
+            - "--host=tcp://0.0.0.0:2375"
+            - "--host=unix:///var/run/docker.sock"
       volumes:
         - name: dblab-storage
           persistentVolumeClaim:
