@@ -12,6 +12,8 @@ spec:
       labels:
         app: "{{ .Release.Name }}-dind"             # Метка, совпадающая с selector выше
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: dblab
           image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"  # Указываем образ из values.yaml

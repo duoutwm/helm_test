@@ -1,4 +1,5 @@
 # --- Параметры для dbLab ---
+replicas: 1                   # Количество подов (реплик)
 dblab:
   image: "ghcr.io/duoutwm/custom-dblab-image"     # свой репозиторий dbLab
   tag: "latest"                         # Актуальная стабильная версия
