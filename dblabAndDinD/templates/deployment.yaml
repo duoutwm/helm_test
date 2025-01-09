@@ -1,0 +1,38 @@
+apiVersion: apps/v1                                 # Используемая версия API для описания Deployment
+kind: Deployment                                    # Тип объекта - Deployment
+metadata:
+  name: "{{ .Release.Name }}-deployment"            # Название Deployment (зависит от имени релиза)
+spec:
+  replicas: {{ .Values.replicas }}                  # Количество реплик (подов)
+  selector:
+    matchLabels:
+      app: "{{ .Release.Name }}-dind"               # Метка, по которой данный Deployment будет выбирать поды
+  template:
+    metadata:
+      labels:
+        app: "{{ .Release.Name }}-dind"             # Метка, совпадающая с selector выше
+    spec:
+      containers:
+        - name: dblab
+          image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"  # Указываем образ из values.yaml
+          command: ["sh", "-c"]
+          args: ["sleep 3600"]  # Контейнер остаётся активным
+          env: 
+            - name: HOSTNAME
+              value: "dblab-static-hostname"  # Статическое указание хоста dbLab
+            - name: ADMIN_PASSWORD
+              value: "{{ .Values.dblab.dbAdminPassword }}"  # Пароль для Web-UI
+          volumeMounts:
+            - name: dblab-storage
+              mountPath: "/var/lib/dblab"  # Хранилище данных dbLab
+            - name: config-volume
+              mountPath: /home/dblab/configs/server.yml
+              subPath: server.yml
+      volumes:
+        - name: dblab-storage
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc      # Имя PVC для хранения данных dbLab
+        - name: config-volume
+          configMap:
+            name: {{ .Release.Name }}-config        # ConfigMap с файлом server.yml
+ 
