@@ -23,7 +23,7 @@ spec:
             - containerPort: 5432 # Порт, на котором PostgreSQL будет слушать подключения
           volumeMounts: # Настройка томов для хранения данных
             - name: pg-data # Имя тома для хранения данных PostgreSQL
-              mountPath: {{ .Values.cloudnativepg.persistence.mountPath }} # Путь в контейнере, где будут храниться данные
+              mountPath: {{ .Values.cloudnativepg.persistence.mountPath }} # П уть в контейнере, где будут храниться данные
   volumeClaimTemplates: # Шаблоны для настройки постоянного хранилища
     - metadata:
         name: pg-data # Имя тома
