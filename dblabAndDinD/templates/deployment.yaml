@@ -18,7 +18,7 @@ spec:
         - name: dblab
           image: "{{ .Values.dblab.image }}:{{ .Values.dblab.tag }}"  # Указываем образ из values.yaml
           securityContext:
-            privileged: true            # Для DinD нужен привилегированный режим
+            privileged: true            # Для DinD нужен пр ивилегированный режим
           env: 
             - name: HOSTNAME
               value: "dblab-static-hostname"  # Статическое указание хоста dbLab
